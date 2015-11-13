@@ -1,0 +1,324 @@
+/*
+ * Uses Bilbao's Identify Group routine to identify groups
+ * constructed from the coset space of Gamma_B \ Gamma
+ */
+
+
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.*;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.FileOutputStream;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Hashtable;
+
+
+
+
+public class FindSymGroups {
+
+    // array list of symmorphic group numbers
+    private static ArrayList<String> sgroups;
+
+
+    // constructor. fills list of symmophic group numbers from file
+    public FindSymGroups() {
+        this.sgroups = new ArrayList<String>();
+        try {
+            Scanner scan1 = new Scanner(new File("Sgroups.dat"));
+            while (scan1.hasNextLine()) {
+                this.sgroups.add(scan1.nextLine());
+            }
+        } catch (FileNotFoundException e) { }
+    }
+
+
+    // returns a list of all combinations of two Lists of cosets
+    private ArrayList<String> combineTwoLists(ArrayList<String> list1, ArrayList<String> list2) {
+        ArrayList<String> combined = new ArrayList<String>();
+        String combStr;
+        for (String str1 : list1) {
+            for (String str2 : list2) {
+                combStr = "";
+                combStr = str1 + "\n" + str2;
+                combined.add(combStr);
+            }
+        }
+        return combined;
+    }
+
+
+    // returns a list of all combinations of all Lists of cosets
+    private ArrayList<String> getCombinations(ArrayList<ArrayList<String>> allLists) {
+        ArrayList<String> combList = new ArrayList<String>(allLists.get(0));
+        for (int i = 1; i < allLists.size(); i++) {
+            combList = combineTwoLists(combList, allLists.get(i));
+        }
+        return combList;
+    }
+
+
+    // returns a list of cosets from the cosets file
+    private ArrayList<ArrayList<String>> makeCosetList(String filename) {
+        ArrayList<ArrayList<String>> cosetList = new ArrayList<ArrayList<String>>();
+        // keep only identity from Coset 1 
+        ArrayList<String> identity = new ArrayList<String>();
+        identity.add("x,y,z");
+        cosetList.add(identity);
+        
+        String line = "";
+        try {
+            Scanner scan2 = new Scanner(new File(filename));
+            scan2.nextLine(); // "Coset 1:"
+            for (; !scan2.nextLine().startsWith("C") ;) { }
+
+            ArrayList<String> cosets = new ArrayList<String>();
+
+            while (scan2.hasNextLine()) {
+                line = scan2.nextLine();
+                if (line.startsWith("(")) {
+                    line = line.replace("(", "");
+                    line = line.replace(")", "");
+                    cosets.add(line);
+                }
+                if (line.startsWith("C")) {
+                    cosetList.add(new ArrayList<String>(cosets));
+                    cosets.clear();
+                }
+            }
+            cosetList.add(new ArrayList<String>(cosets));
+        } catch (FileNotFoundException e) { }
+
+        return cosetList;
+    }
+
+
+    public Hashtable<String, int> loadCenNums() {
+        Hashtable<String, int> cen_nums = new Hashtable<String, int>();
+        try {
+            Scanner scan = new Scanner(new File("dict2.txt"));
+            String line = "";
+            while (scan.hasNextLine()) {
+                line = scan.nextLine();
+                String[] theline = line.split(" ");
+                for (int i=0; i < 10; i++) {
+                    cen_nums.put(theline[i], Integer.parseInt(theline[++i]));
+                }
+            }
+        } catch (FileNotFoundException e) {
+            System.exit(1);
+        }
+        return cen_nums;
+    }
+
+
+    public static double parseString(String fraction) {
+        if (fraction.contains("/")) {
+            String[] frac = fraction.split("/");
+            return Double.parseDouble(frac[0]) / Double.parseDouble(frac[1]);
+        } else {
+            return Double.parseDouble(fraction);
+        }
+    }
+
+    
+    public static double getDeterminant(String[] tvalues) {
+        double[] a = new double[tvalues.length];
+        for (int i=0; i<tvalues.length; i++) {
+            a[i] = parseString(tvalues[i]);
+        }
+        return a[0]*(a[5]*a[10]-a[6]*a[9]) - a[1]*(a[4]*a[10]-a[6]*a[8]) + a[2]*(a[4]*a[9]-a[5]*a[8]);
+    }
+
+
+    public static void main(String[] args) throws Exception {
+        try (final WebClient webClient = new WebClient()) {
+
+            FindSymGroups findSymGroups = new FindSymGroups();
+
+            // Initialize strings to hold lines from files
+            String bnum;
+            String tmatrix;
+            String row1;
+            String row2;
+            String row3;
+
+            try {
+                // read from the file containing normal B groups and the transformations
+                Scanner scan = new Scanner(new File("normalB_" + args[0]));
+
+                // for each normal B group and given transformation matrix in file
+                while (scan.hasNextLine()) {
+
+                    // get the B group number
+                    bnum = scan.nextLine();
+                    // get the transformation matrix
+                    row1 = scan.nextLine();
+                    row2 = scan.nextLine();
+                    row3 = scan.nextLine();
+                    tmatrix = row1 + row2 + row3;
+
+                    scan.nextLine(); // blank line
+
+                    // trim leading whitespace and store values of matrix in array
+                    tmatrix = tmatrix.trim();
+                    String[] tvalues = tmatrix.split("\\s+");
+
+                    // access COSETS from the Bilbao server
+                    final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cryst/cosets.html");
+
+                    // get text fields
+                    final HtmlInput sup = page.getElementByName("super");
+                    final HtmlInput sub = page.getElementByName("sub");
+                    final HtmlInput x1 = page.getElementByName("x1");
+                    final HtmlInput x2 = page.getElementByName("x2");
+                    final HtmlInput x3 = page.getElementByName("x3");
+                    final HtmlInput x4 = page.getElementByName("x4");
+                    final HtmlInput y1 = page.getElementByName("y1");
+                    final HtmlInput y2 = page.getElementByName("y2");
+                    final HtmlInput y3 = page.getElementByName("y3");
+                    final HtmlInput y4 = page.getElementByName("y4");
+                    final HtmlInput z1 = page.getElementByName("z1");
+                    final HtmlInput z2 = page.getElementByName("z2");
+                    final HtmlInput z3 = page.getElementByName("z3");
+                    final HtmlInput z4 = page.getElementByName("z4");
+
+                    // set text fields with information from normal B group file
+                    sup.setValueAttribute(args[0]);
+                    sub.setValueAttribute(bnum);
+                    x1.setValueAttribute(tvalues[0]);
+                    x2.setValueAttribute(tvalues[1]);
+                    x3.setValueAttribute(tvalues[2]);
+                    x4.setValueAttribute(tvalues[3]);
+                    y1.setValueAttribute(tvalues[4]);
+                    y2.setValueAttribute(tvalues[5]);
+                    y3.setValueAttribute(tvalues[6]);
+                    y4.setValueAttribute(tvalues[7]);
+                    z1.setValueAttribute(tvalues[8]);
+                    z2.setValueAttribute(tvalues[9]);
+                    z3.setValueAttribute(tvalues[10]);
+                    z4.setValueAttribute(tvalues[11]);
+
+                    // click on 'Submit'
+                    HtmlSubmitInput show = page.getElementByName("show");
+                    final HtmlPage page2 = show.click();
+
+                    // write left coset decomp of G with respect to B to file
+                    try {
+                        PrintWriter writer = new PrintWriter(new FileOutputStream("cosets_file", false));
+                        writer.println(page2.getElementsByTagName("pre").get(1).getTextContent());
+                        writer.close();
+                    } catch (FileNotFoundException e) { }
+
+                    // read coset file and create list of lists of cosets
+                    ArrayList<ArrayList<String>> cosetList = findSymGroups.makeCosetList("cosets_file");
+
+                    // get rid of all non-symmorphic elements
+                    for (ArrayList<String> cosets : cosetList) {
+
+                        Iterator<String> it = cosets.iterator();
+                        while (it.hasNext()) {
+
+                            final HtmlPage page3 = webClient.getPage("http://www.cryst.ehu.es/cgi-bin/cryst/programs/checkgr.pl?tipog=gesp");
+
+                            List<HtmlForm> forms = page3.getForms();
+
+                            HtmlTextArea text = forms.get(0).getTextAreaByName("generators");
+
+                            text.setText("x,y,z\n"+it.next());
+
+                            HtmlSubmitInput submit = page3.getElementByName("list");
+                            final HtmlPage page4 = submit.click();
+
+                            List<HtmlAnchor> anchors = page4.getAnchors();
+
+                            String gnum = anchors.get(3).getHrefAttribute().replaceAll("[\\D]", "");
+
+                            if (!sgroups.contains(gnum)) {
+                                it.remove();
+                            }
+                        }
+                
+                    }
+
+                    boolean notPossible = false;
+
+                    // no symmorphic groups possible if any of the lists are empty
+                    for (ArrayList<String> cosets : cosetList) {
+                        if (cosets.isEmpty()) {
+                            notPossible = true;
+                        }
+                    }
+
+                    if (notPossible) {
+                        continue;
+                    }
+
+
+                    // create Set to store the corresponding symmorphic groups
+                    HashSet<String> sNums = new HashSet<String>(); 
+
+                    // create list of all combinations of symmorphic elements 
+                    ArrayList<String> combinations = findSymGroups.getCombinations(cosetList);
+
+                    // check all combinations to find the symmorphic groups
+                    for (String cosets : combinations) {
+
+                        final HtmlPage page4 = webClient.getPage("http://www.cryst.ehu.es/cgi-bin/cryst/programs/checkgr.pl?tipog=gesp");
+
+
+                        List<HtmlForm> forms = page4.getForms();
+
+                        HtmlTextArea text = forms.get(0).getTextAreaByName("generators");
+
+                        text.setText(cosets);
+
+                        HtmlSubmitInput submit = page4.getElementByName("list");
+                        final HtmlPage page5 = submit.click();
+
+                        List<HtmlAnchor> anchors = page5.getAnchors();
+
+                        String gnum = anchors.get(3).getHrefAttribute().replaceAll("[\\D]", "");
+
+                        if (sgroups.contains(gnum)) {
+                            sNums.add(gnum);
+                        }
+
+                    }
+
+                    // print the B group, S group(s), and transformation matrix (if S group exists) 
+                    if (!sNums.isEmpty()) {
+
+                        System.out.println(bnum);
+                        for (String snum : sNums) {
+                            if (!snum.compareTo("1")) {
+                                System.out.println(snum);
+                            }
+                        }
+                        System.out.println(row1);
+                        System.out.println(row2);
+                        System.out.println(row3 + "\n");
+
+                    }
+
+
+                }
+
+            } catch (FileNotFoundException e) { }
+
+        }
+
+    }
+
+}
+
+
+
+
+
+

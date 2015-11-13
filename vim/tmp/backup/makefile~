@@ -1,0 +1,15 @@
+JC = javac
+ CLASSES = $(wildcard *.java)
+
+all: classes
+
+%.class: %.java
+		$(JC) $(JFLAGS) $<
+
+classes: $(CLASSES:.java=.class)
+
+run:
+		java FindSymGroups 20 > normalB_S_20
+
+clean:
+		rm *.class

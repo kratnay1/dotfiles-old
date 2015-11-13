@@ -1,0 +1,100 @@
+#!/bin/bash
+
+# Finds normal B and S subgroups down to [Gamma:T] for a space group
+# using several of the routines on the Bilbao Crystallographic Server
+
+
+gnum=$1
+
+# file to store normal B groups for the group
+normalB_file="normalB_${gnum}"
+
+# for each chiral B group
+for bnum in 4 19 76 78 144 145 169 170
+do
+
+    # find indices of B in G down to [Gamma:T]
+    indices=$(java getIndex $gnum $bnum)
+
+    # if string is empty skip to the next B group
+    [[ -z $indices ]] && continue
+
+    indices=($indices)
+    
+    # file to store coset spaces that are not groups
+    notGroup_file="notGroup_${gnum}_${bnum}"
+
+
+    # for each index
+    for index in "${indices[@]}"
+    do
+
+        tmatrix_file="g${gnum}_${bnum}_${index}_matrices"
+
+        # write transformation matrices relating B to G to file
+        java getMatrices $gnum $bnum $index > $tmatrix_file
+
+        # edit file to delete repeated matrices
+        java RemoveDuplicates $tmatrix_file > temp
+        mv temp $tmatrix_file
+
+
+        # line counters
+
+        a=1
+        b=3
+        numLines=$(wc -l < $tmatrix_file)
+
+
+        while [ $b -le $numLines ]
+        do
+            
+            # get transformation matrix from file
+            matrix=$(sed -n "$a,$b p" $tmatrix_file)
+
+            left_file="${gnum}_${bnum}_${index}_${a}_left"
+            right_file="${gnum}_${bnum}_${index}_${a}_right"
+
+            # write left and write cosets to file
+            java getLeftCosets $gnum $bnum $matrix > $left_file
+            java getRightCosets $gnum $bnum $matrix > $right_file
+
+            # edit files to make the cosets easy to load into python
+            # (edit adds a 'g' in front of file name to mark it as edited)
+            ./edit $left_file
+            ./edit $right_file
+
+            # run python script to check normality of B or S
+            bool=$(python3 normal_B_or_S.py g${bnum}.dat g${left_file} g${right_file})
+
+
+            # if G is not a group
+            if [[ $bool == '-1' ]];
+            then
+                echo -e "$left_file\n$right_file\n" >> $notGroup_file
+
+            # if B is normal in G
+            elif [[ $bool == '1' ]];
+            then
+                echo -e "$bnum\n$matrix\n" >> $normalB_file
+
+            # B is not normal in G
+            else
+                :
+            fi
+            
+            #increment line counters for next matrix in file
+            ((a+=3))
+            ((b+=3))
+        
+
+        done
+
+    done
+
+done
+
+
+
+
+

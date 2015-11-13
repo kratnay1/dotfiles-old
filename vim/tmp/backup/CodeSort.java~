@@ -1,0 +1,247 @@
+// CodeSort.java
+
+import java.util.Scanner;
+import java.util.HashMap;
+import java.util.ArrayList;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+
+
+/**
+ * Class that sorts unsorted words given a small list of sorted words.
+ * @author  using Mark Allen Weiss's implementation of merge sort (modifed)
+ */
+public class CodeSort {
+
+    /** Graph of the characers.  */
+    Graph<Character> graph;
+
+    /** Hashmap containing the topological numbers for each node. */
+    HashMap<Character, Integer> topNums;
+
+    /** ArrayList containing the words. */
+    ArrayList<Word> words;
+
+    /**
+     * Class to hold a String and implement comparable based on the
+     * topological numbers of the characters of interest of two words.
+     */
+    class Word implements Comparable<Word> {
+
+        /** The word. */
+        String word;
+
+        /**
+         * Constructor that makes a word.
+         * @param  inWord string of the word
+         */
+        public Word(String inWord) {
+            this.word = inWord;
+        }
+
+        /**
+         * Overriding compareTo method based on topological 
+         * numbers of the characters of interest of two words.
+         * @param  other word to compare to
+         * @return  negative num if less than other, positive
+         * if greater, 0 if equal
+         */
+        @Override
+        public int compareTo(Word other) {
+            int len = CodeSort.this.min(this.word.length(), 
+                                                   other.word.length());
+            for (int i = 0; i < len; i++) {
+                if (this.word.charAt(i) != other.word.charAt(i)) {
+                    Integer topNum = 
+                          CodeSort.this.topNums.get(this.word.charAt(i));
+                    Integer topNumOther = 
+                          CodeSort.this.topNums.get(other.word.charAt(i));
+                    return topNum.compareTo(topNumOther);
+                }
+            }
+            if (this.word.length() > other.word.length()) {
+                return 1;
+            } else if (this.word.length() < other.word.length()) {
+                return -1;
+            return 0;
+        }
+
+    }   // end inner class Word
+
+
+    /**
+     * Constructor for CodeSort. Takes in input file of sorted words and
+     * input file of unsorted words to create graph 
+     * @param  sortedFile string containing file name of sorted words
+     * @param  unsortedFile string containing file name of unsorted words
+     */
+    public CodeSort(String sortedFile, String unsortedFile) {
+        this.graph = new Graph<Character>();
+        this.createGraph(sortedFile);
+        this.topNums = this.graph.topologicalSort();
+        this.sortWords(unsortedFile);
+    }
+
+
+    /**
+     * Helper function to determine the lower of two ints.
+     * @param  a the first integer
+     * @param  b the second integer
+     * @return   the smaller integer
+     */
+    private static int min(int a, int b) {
+        if (a < b) {
+            return a;
+        }
+        return b;
+    }
+
+
+    /**
+     * Reads in unsorted words and creates the graph with the 
+     * appropriate edges for the characters of the alphabet.
+     * @param  file string containing the filename of the sorted words
+     */
+    private void createGraph(String file) {
+        try {
+            Scanner scan = new Scanner(new File(file));
+            String[] strings = new String[2];
+            // read in adjacent words and add edges to graph
+            if (scan.hasNext()) {
+                strings[0] = scan.next();
+            }
+            while (scan.hasNext()) {
+                strings[1] = scan.next();
+                int len = this.min(strings[0].length(), strings[1].length());
+                for (int i = 0; i < len; i++) {
+                    if (strings[0].charAt(i) != strings[1].charAt(i)) {
+                        this.graph.addNode(strings[0].charAt(i));
+                        this.graph.addNode(strings[1].charAt(i));
+                        this.graph.addEdge(strings[0].charAt(i),
+                                                    strings[1].charAt(i));
+                        break;
+                    }
+                }
+                strings[0] = strings[1];
+            }
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+            System.exit(1);
+        }
+    }
+
+
+    /**
+     * Stores words in ArrayList and uses merge sort.
+     * @param file string of filename containing unsorted words
+     */
+    private void sortWords(String file) {
+        try {
+            Scanner scan = new Scanner(new File(file));
+            this.words = new ArrayList<Word>();
+            while (scan.hasNext()) {
+                this.words.add(new Word(scan.next()));
+            }
+            this.mergeSort(this.words);
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+            System.exit(1);
+        }
+    }
+
+
+    /**
+     * Internal method that makes recursive calls.
+     * @author Mark Allen Weiss (modified)
+     * @param  a  an ArrayList of Words
+     * @param  tmpArray an array to place the merged result
+     * @param  left  the left-most index of the sub-ArrayList
+     * @param  right  the right-most index of the sub-ArrayList
+     */
+    private static void mergeSort(ArrayList<Word> a,
+                           Word[] tmpArray, int left, int right) {
+        if (left < right) {
+            int center = (left + right) / 2;
+            mergeSort(a, tmpArray, left, center);
+            mergeSort(a, tmpArray, center + 1, right);
+            merge(a, tmpArray, left, center + 1, right);
+        }
+    }
+
+
+    /**
+     * Mergesort algorithm.
+     * @author Mark Allen Weiss (modified)
+     * @param a an ArrayList of Words
+     */
+    private static void mergeSort(ArrayList<Word> a) {
+        mergeSort(a, new Word[a.size()], 0, a.size() - 1);
+    }
+
+
+    /**
+     * Internal method that merges two sorted halves of a sub-ArrayList.
+     * @author Mark Allen Weiss (modified)
+     * @param  a an ArrayList of Words
+     * @param tmpArray an array to place the merged result
+     * @param leftPos the left-most index of the sub-ArrayList
+     * @param rightPos the index of the start of the second half
+     * @param rightEnd the right-most index of the sub-ArrayList
+     */
+    private static void merge(ArrayList<Word> a, Word[] tmpArray, 
+                                 int leftPos, int rightPos, int rightEnd) {
+        int leftEnd = rightPos - 1;
+        int tmpPos = leftPos;
+        int numElements = rightEnd - leftPos + 1;
+        while (leftPos <= leftEnd && rightPos <= rightEnd) {
+            if (a.get(leftPos).compareTo(a.get(rightPos)) <= 0) {
+                tmpArray[tmpPos++] = a.get(leftPos++);
+            } else {
+                tmpArray[tmpPos++] = a.get(rightPos++);
+            }
+        }
+        while (leftPos <= leftEnd) {
+            tmpArray[tmpPos++] = a.get(leftPos++);
+        }
+        while (rightPos <= rightEnd) {
+            tmpArray[tmpPos++] = a.get(rightPos++);
+        }
+        for (int i = 0; i < numElements; i++, rightEnd--) {
+            a.set(rightEnd, tmpArray[rightEnd]);
+        }
+    }
+
+
+    /**
+     * Writes words from ArrayList to specified output file.
+     * @param file string containing output filename
+     */
+    public void writeFile(String file) {
+        try {
+            PrintWriter writer = new PrintWriter(file);
+            for (Word elem : this.words) {
+                writer.println(elem.word);
+            }
+            writer.close();
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+            System.exit(1);
+        }
+    }
+
+
+    /**
+     * Takes in file of sorted words, unsorted words to sort, and output 
+     * file to write to.  Sorts the unsorted word using topological sort
+     * and writes the sorted list to the specified output file.
+     * @param args string array of command line arguments
+     */
+    public static void main(String[] args) {
+        CodeSort sorter = new CodeSort(args[0], args[1]);
+        sorter.writeFile(args[2]);
+    }
+
+
+}   // end class CodeSort
+

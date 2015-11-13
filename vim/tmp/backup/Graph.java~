@@ -1,0 +1,292 @@
+//Graph.java
+
+import java.util.LinkedList;
+import java.util.HashMap;
+import java.util.Set;
+import java.util.Queue;
+
+/**
+ * Graph ADT to help with task 3.
+ * @param <T> type of node.
+ */
+public class Graph<T> {
+
+    /** Adjacency list that stores edges from vertex i. */
+    HashMap<T, LinkedList<WeightedEdge>> edgesFrom;
+    /** directed edges. */
+    // HashMap<T, LinkedList<WeightedEdge>> diEdges;
+    // * Adjacency list that stores edges that end at vertex i. 
+    // ArrayList<List<Integer>> edgesTo;
+    /** Number of nodes in graph. */
+    int size;
+    /** number of edges in graph. */
+    int edges;
+
+    /**
+     * Default constructor.
+     */
+    public Graph() {
+        this.edgesFrom = new HashMap<T, LinkedList<WeightedEdge>>();
+        // this.edgesTo = new ArrayList<List<Integer>>();
+        this.size = 0;
+        this.edges = 0;
+    }
+
+    /**
+     * Adding a node to the graph.
+     * @param  node node to add.
+     */
+    public void addNode(T node) {
+        if (this.edgesFrom.containsKey(node)) {
+            return;
+        }
+        this.edgesFrom.put(node, new LinkedList<WeightedEdge>());
+        // this.edgesTo.add(new List<Integer>());
+        this.size++;
+    }
+
+
+    /**
+     * Adding an edge between two nodes.
+     * @param from Node edge from.
+     * @param to   [description]
+     */
+    public void addEdge(T from, T to) {
+        if (!this.edgesFrom.containsKey(from) 
+            || !this.edgesFrom.containsKey(to)) {
+            throw new IllegalArgumentException("Nodes do not exist in graph");
+        }
+        LinkedList<WeightedEdge> temp = this.edgesFrom.get(from);
+        temp.add(new WeightedEdge(to));
+        this.edgesFrom.put(from, temp);
+        this.edges++;
+    }
+
+    /**
+     * Adding a weighted edge.
+     * @param from From node.
+     * @param to   end node.
+     * @param  weight weight of edge.
+     */
+    public void addWeightedEdge(T from, T to, int weight) {
+        if (!this.edgesFrom.containsKey(from) 
+            || !this.edgesFrom.containsKey(to)) {
+            throw new IllegalArgumentException("Nodes do not exist in graph");
+        }
+        LinkedList<WeightedEdge> temp = this.edgesFrom.get(from);
+        temp.add(new WeightedEdge(to, weight));
+        this.edgesFrom.put(from, temp);
+        temp = this.edgesFrom.get(to);
+        temp.add(new WeightedEdge(from, weight));
+        this.edgesFrom.put(to, temp);
+        this.edges++;
+    }
+
+    /**
+     * Gets all neighbors of given node.
+     * @param  node node of interest.
+     * @return      nodes that node is connected to.
+     */
+    public LinkedList<WeightedEdge> neighbors(T node) {
+        return this.edgesFrom.get(node);
+    }
+
+    /**
+     * Returns number of neighbors of a given node.
+     * @param  node node of interest
+     * @return      number of nodes that node is connected to
+     */
+    private int numNeighbors(T node) {
+        return this.edgesFrom.get(node).size();
+    }
+
+    /**
+     * Performs a topological sort and returns hashmap with the order.
+     * @return a hashmap containing the nodes and their topological number
+     */
+    public HashMap<T, Integer> topologicalSort() {
+        HashMap<T, Integer> indegrees = new HashMap<>();
+        HashMap<T, Integer> topNums = new HashMap<>();
+        Set<T> keyset = this.edgesFrom.keySet();
+        for (T node : keyset) {
+            indegrees.put(node, 0);
+        }
+        for (T node: keyset) {
+            LinkedList<WeightedEdge> neighbors = this.neighbors(node);
+            for (WeightedEdge i : neighbors) {
+                indegrees.put(i.end, indegrees.get(i.end) + 1);
+            }
+        }
+        Queue<T> q = new LinkedList<>();
+        for (T node: keyset) {
+            if (indegrees.get(node).equals(0)) {
+                q.add(node);
+            }
+        }
+        int counter = 0;
+        while (!q.isEmpty()) {
+            T node = q.remove();
+            topNums.put(node, ++counter);
+            LinkedList<WeightedEdge> neighbors = this.neighbors(node);
+            for (WeightedEdge i : neighbors) {
+                indegrees.put(i.end, indegrees.get(i.end) - 1);
+                if (indegrees.get(i.end).equals(0)) {
+                    q.add(i.end);
+                }
+            }
+        }
+        return topNums;
+    }
+
+
+    /**
+     * Shortest path algorithm.
+     * @param source Start node.
+     * @param end    end node.
+     * @return  Path object with path and distance.
+     */
+    public Path dijkstra(T source, T end) {
+        if (!this.edgesFrom.containsKey(source)
+            || !this.edgesFrom.containsKey(end)) {
+            throw new IllegalArgumentException("Source or end not in graph");
+        }
+        HashMap<T, Integer> dist = new HashMap<>();
+        HashMap<T, T> prev = new HashMap<>();
+        HashMap<T, Boolean> found = new HashMap<>();
+        AdaptablePQ<T> nodes = new AdaptablePQ<>(this.edgesFrom.size());
+        for (T entry: this.edgesFrom.keySet()) {
+            dist.put(entry, Integer.MAX_VALUE);
+            prev.put(entry, null);
+            found.put(entry, false);
+            nodes.insert(entry, Integer.MAX_VALUE);
+        }
+        this.findShortestPaths(dist, prev, found, nodes, source);
+        T curr = end;
+        LinkedList<T> path = new LinkedList<>();
+        while (curr != null) {
+            path.addFirst(curr);
+            curr = prev.get(curr);
+        }
+
+        return new Path(path, dist.get(end));
+
+    }
+
+    /**
+     * Helper function for dijkstra's algorithm.
+     * @param dist  shortest distances.
+     * @param prev  previous node for given node.
+     * @param found if node is found or not.
+     * @param nodes all nodes.
+     * @param  source source node.
+     */
+    private void findShortestPaths(HashMap<T, Integer> dist
+        , HashMap<T, T> prev,
+        HashMap<T, Boolean> found, AdaptablePQ<T> nodes, T source) {
+        // AdaptablePQ<T> nodes = new AdaptablePQ<>(dist);
+        // set source distance == 0
+        dist.put(source, 0);
+        nodes.replaceValue(source, 0);
+        int i = 0;
+        while (nodes.size() > 0) {
+            T curr = nodes.delMin();
+            if (found.get(curr)) {
+                continue;
+            }
+            found.put(curr, true);
+            LinkedList<WeightedEdge> neighbors = this.neighbors(curr);
+            if (neighbors != null) {
+                for (WeightedEdge edge : neighbors) {
+                    if (edge == null) {
+                        continue;
+                    }
+                    if (dist.get(curr) + edge.weight < dist.get(edge.end)) {
+                        dist.put(edge.end, dist.get(curr) + edge.weight);
+                        nodes.replaceValue(edge.end, dist.get(curr) 
+                            + edge.weight);
+                        prev.put(edge.end, curr);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Weighted edge helper class.
+     */
+    class WeightedEdge implements Comparable<WeightedEdge> {
+        /** End Vertex. */
+        T end;
+        /** Weight associated with edge. */
+        Integer weight;
+
+        /**
+         * Contructor that makes weighted edge.
+         * @param  end1    end node.
+         * @param  weight1 weight associated with node.
+         */
+        public WeightedEdge(T end1, Integer weight1) {
+            this.end = end1;
+            this.weight = weight1;
+        }
+
+        /**
+         * Constructor for non-weighted edge.
+         * @param  end1  end node.
+         */
+        public WeightedEdge(T end1) {
+            this.end = end1;
+            this.weight = -1;
+        }
+
+        /**
+         * overriding compareTo method.
+         * @param  other thing to compare to/
+         * @return  negative num of this is less than other,
+         * positive if greater. 0 if equal.
+         */
+        @Override
+        public int compareTo(WeightedEdge other) {
+            return this.weight.compareTo(other.weight);
+        }
+
+    }
+
+    /**
+     * Helper class to return shortest Path.
+     */
+    public class Path {
+        /** Path of nodes. */
+        LinkedList<T> path;
+        /** distance from source to end. */
+        Integer distance;
+
+        /**
+         * Constructor.
+         * @param  p path linked list
+         * @param  d distance.
+         */
+        public Path(LinkedList<T> p, Integer d) {
+            this.path = p;
+            this.distance = d;
+        }
+
+        /**
+         * Gets path.
+         * @return shortest path.
+         */
+        public LinkedList<T> getPath() {
+            return this.path;
+        }
+
+        /**
+         * gets distance.
+         * @return distance.
+         */
+        public Integer getDistance() {
+            return this.distance;
+        }
+
+    }
+
+}

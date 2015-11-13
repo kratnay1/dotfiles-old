@@ -1,0 +1,164 @@
+//ExpressionTree.java
+
+/** 
+ *    Kushan Ratnayake
+ *    Data Structures
+ *    Mar 3rd 2015
+ *    Homework 2
+ *    Login: kratnay1
+ */
+
+import java.util.Iterator;
+
+/**
+ *    Class that extends BinaryTree226Linked. A specialized version of a binary 
+ *    tree that holds components (strings) of an expression.
+ */
+public class ExpressionTree extends BinaryTree226Linked<ExpressionTreeToken> 
+                                    implements ExpressionTreeInterface {
+
+    /**
+     *    Creates an Expression tree containing a single node with
+     *    empty left and right subtrees.
+     *    @param element the data item to store in the node
+     */
+    public ExpressionTree(ExpressionTreeToken element) {
+        this.root = new BinaryNode<ExpressionTreeToken>(element);
+        this.size = 1;
+    }
+
+    /**
+     *    Create an Expression tree containing a root node with 
+     *    specified left and right subtrees.
+     *    @param element the data item to store in the root node
+     *    @param leftTree the tree to serve as left subtree of root
+     *    @param rightTree the tree to serve as right subtree of root
+     */
+    public ExpressionTree(ExpressionTreeToken element,
+                        ExpressionTree leftTree,
+                        ExpressionTree rightTree) {
+
+        //create new root node
+        this.root = new BinaryNode<ExpressionTreeToken>(element);
+
+        //set root node's left and right references appropriately
+        if (leftTree == null) {
+            this.root.left = null;
+        } else {
+            this.root.left = leftTree.root;
+        }
+        if (rightTree == null) {
+            this.root.right = null;
+        } else {
+            this.root.right = rightTree.root;
+        }
+        
+        //calculates size of newly created ExpressionTree based on subtree sizes
+        this.size = leftTree.size + rightTree.size + 1;
+    }
+
+    /**
+     *    Return an Iterator for the ExpressionTree.
+     *    @return the iterator
+     */
+    public Iterator<ExpressionTreeToken> iterator() {
+        return new ExpressionTreeIterator(this);
+    }
+
+    /**
+     *    An inner class for the iterator. 
+     */
+    private class ExpressionTreeIterator 
+                        implements Iterator<ExpressionTreeToken> {
+        
+        /** Array of items listed in preorder. */
+        private ExpressionTreeToken[] items;
+
+        /** The index of the array of ExpressionTreeTokens. */
+        private int index;
+
+        /** The number of elements in the expression tree. */
+        private int capacity;
+
+        /** 
+         *    Create an ExpressionTreeIterator.
+         *    @param inTree the ExpressionTree to iterate over
+         */
+        public ExpressionTreeIterator(ExpressionTree inTree) {
+            this.capacity = inTree.size;
+            this.items = new ExpressionTreeToken[this.capacity];
+            this.preorder(inTree.root);
+            this.index = 0;
+        }
+
+        /** 
+         *    Helpfer function to fill instance array in preorder.
+         *    @param node the ExpressionTree to iterate over
+         */
+        private void preorder(BinaryNode<ExpressionTreeToken> node) {
+            if (node == null) {
+                return;
+            }
+            this.items[this.index++] = node.data;
+            this.preorder(node.left);
+            this.preorder(node.right);
+        }
+
+        /**
+         *    See if the iterator has another element.
+         *    @return true if there is one, false otherwise
+         */
+        public boolean hasNext() {
+            return this.index < this.capacity;
+        }
+
+        /**
+         *    Get the next element from the ExpressionTree iterator.
+         *    @return  the next element
+         */
+        public ExpressionTreeToken next() {
+            if (this.hasNext()) {
+                return this.items[this.index++];
+            }
+            return null;
+        }
+
+        /**
+         *    Remove function is not well defined for this iterator.
+         */
+        public void remove() {
+            throw new UnsupportedOperationException("remove is not defined");
+        }
+
+    }  // end inner class ExpressionTreeIterator
+
+
+    /**
+     *    Returns the expression held in the tree in parenthesized infix format.
+     *    @return the string in infix format
+     */
+    public String getParenthesizedInfix() {
+        return this.inOrder(this.root).trim();
+    }
+
+    /**
+     *    Helpfer function that recursively executes an inorder traversal
+     *    of the ExpressionTree.
+     *    @return the String representing the inorder traversal
+     *    @param node the node with which to start the traversal
+     */
+    private String inOrder(BinaryNode<ExpressionTreeToken> node) {
+        if (node == null) {
+            return "";
+        }
+        if (node.left == null && node.right == null) {
+            return node.data + " ";
+        }
+        return "(" + this.inOrder(node.left).trim()  + " "
+            + node.data + " "
+            + this.inOrder(node.right).trim() + ")";
+    }
+    
+}  // end class ExpressionTree
+
+

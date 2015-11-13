@@ -1,0 +1,26 @@
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.*;
+
+public class TestClass {
+    public static void main(String[] args) throws Exception {
+
+        try (final WebClient webClient = new WebClient()) {
+            final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cryst/cosets.html");
+
+            final HtmlInput sup = page.getElementByName("super");
+            final HtmlInput sub = page.getElementByName("sub");
+
+            sup.setValueAttribute("84");
+            sub.setValueAttribute("1");
+
+            HtmlSubmitInput show = page.getElementByName("show");
+    
+            final HtmlPage page2 = show.click();
+            //final DomNodeList<DomElement> pretag = page2.getElementsbyTagName("pre");
+            //System.out.println(pretag.get(0).toString());
+
+            //System.out.println(page2.asXml());
+            System.out.println(page2.getElementsByTagName("pre").get(1).getTextContent());
+        }
+    }
+}

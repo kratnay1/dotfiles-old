@@ -1,0 +1,115 @@
+/*
+ * Prints the indices of interest of a given Gamma_B in Gamma
+ */
+
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.*;
+import java.util.Hashtable;
+import java.util.Dictionary;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.lang.Math;
+
+
+public class getIndex {
+    public static void main(String[] args) throws Exception {
+        try (final WebClient webClient = new WebClient()) {
+
+            // create dictionary of formula units for gamma (from file)
+
+            Hashtable<String, String> formula_units = new Hashtable<String, String>();
+            try {
+                Scanner scan = new Scanner(new File("dict2.txt"));
+                String line = "";
+                while (scan.hasNextLine()) {
+                    line = scan.nextLine();
+                    String[] theline = line.split(" ");
+                    for (int i=0; i < 10; i++) {
+                        formula_units.put(theline[i], theline[++i]);
+                    }
+                }
+            } catch (FileNotFoundException e) {
+                System.exit(1);
+            }
+
+            // create dictionary of [Gamma_B : P1]
+
+            Hashtable<String, String> indices_p1_B = new Hashtable<String, String>();
+            indices_p1_B.put("4", "2");
+            indices_p1_B.put("19", "4");
+            indices_p1_B.put("76", "4");
+            indices_p1_B.put("78", "4");
+            indices_p1_B.put("144", "3");
+            indices_p1_B.put("145", "3");
+            indices_p1_B.put("169", "6");
+            indices_p1_B.put("170", "6");
+            
+            // compute [Gamma : P1]        
+            
+            final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-get_index");
+            final HtmlInput sgr1 = page.getElementByName("sgr1");
+            final HtmlInput sgr2 = page.getElementByName("sgr2");
+            final HtmlInput zg = page.getElementByName("zg");
+            final HtmlInput zh = page.getElementByName("zh");
+
+            sgr1.setValueAttribute(args[0]);
+            sgr2.setValueAttribute("1");
+            zg.setValueAttribute("1");
+            zh.setValueAttribute("1");
+
+            HtmlSubmitInput submit = page.getElementByName("submit");
+            final HtmlPage page2 = submit.click();
+
+            double ind_p1_gamma = Double.parseDouble((page2.getElementsByTagName("td").get(11).getTextContent()));
+            
+            // compute [Gamma : T]
+
+            double centering_num =  Double.parseDouble(formula_units.get(args[0]));
+            double ind_T_gamma = ind_p1_gamma / centering_num;
+
+
+            //smallest index: [Gamma : T] / [Gamma_B : P1]
+            
+            double ind_p1_B = Double.parseDouble(indices_p1_B.get(args[1]));
+            double lowest_ind = ind_T_gamma / ind_p1_B;
+
+            // is the smallest index possible?
+            
+            double tol = 0.00000001;
+            if (Math.abs(Math.round(lowest_ind) - lowest_ind) > tol) {
+                System.exit(0);
+            }
+
+            // try all possible indices to see if they work
+            
+            int ind = (int) Math.round(lowest_ind);
+            
+            while (ind <= (int) ind_T_gamma) {     
+
+                if (ind_T_gamma % ind != 0) {
+                    ind++;
+                    continue;
+                }
+                
+                final HtmlPage page3 = webClient.getPage("http://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-subggraph?id=&index=" + Integer.toString(ind) + "&super=" + args[0] + "&sub=" + args[1] + "&client=&path=latt@chains_tab&what=print");
+
+                DomNodeList<DomElement> list = page3.getElementsByTagName("b");
+
+                if (list.size() == 0) {
+                    System.out.println(ind);
+                }
+                
+                ind++;
+
+            }
+
+
+
+        }
+    }
+}
+
+
+
+

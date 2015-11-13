@@ -1,0 +1,548 @@
+/**
+ * Kushan Ratnayake (kratnay1)
+ * Homework 3
+ */
+
+import java.util.ArrayList;
+import java.util.Iterator;
+
+/**
+ * Implements an AVL tree.
+ * Note that all "matching" is based on the compareTo method.
+ * @author Mark Allen Weiss, with substantial modification by Sara More
+ * 
+ * @param <T> the type of data to hold in each tree node
+ *
+ * <br>
+ *  Note:  &lt;? super T&gt; in the class header bounds the 
+ *  parameter of Comparable to any class that is a 
+ *  supertype of T.
+ *  The entire phrase T extends Comparable&lt;? super T&gt; 
+ *  means, then, that the data type T stored within the
+ *  nodes of the AvlTree must implement Comparable
+ *  with parameter either T or some superclass of T.
+ *  This is useful when T's compareTo method is actually
+ *  implemented by its superclass, for example.
+ *  (We'll talk about this more in class.)
+*/
+public class AvlTree<T extends Comparable<? super T>> 
+                                implements Iterable<T> {
+
+    /** The AVL balance condition allows a small imbalance
+         in subtree heights; this is the amount. */
+    private static final int ALLOWED_IMBALANCE = 1;
+
+    /** The tree root. */
+    private AvlNode<T> root;
+
+    /**
+     * Construct the tree.
+     */
+    public AvlTree() {
+        this.root = null;
+    }
+
+    /**
+     * Insert into the tree; duplicates are ignored.
+     * @param x the item to insert
+     */
+    public void insert(T x) {
+        this.root = this.insert(x, this.root);
+    }
+
+    /**
+     * Remove from the tree. Nothing is done if x is not found.
+     * @param x the item to remove
+     */
+    public void remove(T x) {
+        this.root = this.remove(x, this.root);
+    }
+
+    /**
+     * Private helper method. Recursively removes an element.
+     * @param target the item to remove
+     * @param curr the current node
+     * @return the modified node 
+     */
+    private AvlNode<T> remove(T target, AvlNode<T> curr) {
+        if (curr == null) {   // empty tree
+            return null;
+        }
+        int compareResult = target.compareTo(curr.element);
+        if (compareResult == 0) {   // found node
+            if (curr.left == null && curr.right == null) {   // leaf node
+                return null;
+            }
+            if (curr.left != null && curr.right != null) {   // 2 children
+                T replacementValue = this.findMin(curr.right).element;   
+                curr.element = replacementValue;   
+                curr.right = this.remove(replacementValue, curr.right);
+            } else {   // exactly one child
+                if (curr.left != null) {
+                    return curr.left;
+                } 
+                return curr.right;
+            }
+        } else if (compareResult < 0) { 
+            curr.left = this.remove(target, curr.left);
+        } else {
+            curr.right = this.remove(target, curr.right);
+        }
+        return this.balance(curr);
+    }
+      
+     
+    /**
+     * Find the smallest item in the tree.
+     * @return smallest item or null if empty
+     */
+    public T findMin() {
+        if (this.isEmpty()) {
+            throw new UnderflowException();
+        }
+        return this.findMin(this.root).element;
+    }
+
+    /**
+     * Find the largest item in the tree.
+     * @return the largest item of null if empty
+     */
+    public T findMax() {
+        if (this.isEmpty()) {
+            throw new UnderflowException();
+        }
+        return this.findMax(this.root).element;
+    }
+
+    /**
+     * Find an item in the tree.
+     * @param x the item to search for
+     * @return true if x is found
+     */
+    public boolean contains(T x) {
+        return this.contains(x, this.root);
+    }
+
+    /**
+     * Make the tree logically empty.
+     */
+    public void makeEmpty() {
+        this.root = null;
+    }
+
+    /**
+     * Test if the tree is logically empty.
+     * @return true if empty, false otherwise
+     */
+    public boolean isEmpty() {
+        return this.root == null;
+    }
+
+    /**
+     * Print the tree contents in sorted order, or the String
+     * "Empty tree." if the tree contains no nodes.
+     */
+    public void printTree() {
+        if (this.isEmpty()) {
+            System.out.println("Empty tree.");
+        } else {
+            this.printTree(this.root);
+        }
+    }
+
+    /**
+     * "Sideways-print" the tree contents, or the String
+     * "Empty tree." if the tree contains no nodes.<br>
+     *
+     * (See assignment handout.)
+     */
+    public void sidewaysPrintTree() {
+        this.sidewaysPrintTree(this.root, "");
+    }
+
+    /**
+     * Private helper method to recursively print tree sideways.
+     * @param curr the node to print
+     * @param indent the amount of spaces with which to indent
+     */
+    private void sidewaysPrintTree(AvlNode<T> curr, String indent) {
+        if (curr != null) {
+            this.sidewaysPrintTree(curr.right, indent + "   ");
+            System.out.println(indent + curr.element);
+            this.sidewaysPrintTree(curr.left, indent + "   ");
+        }
+    }
+
+    /**
+     * Return all values in the range from low to high, inclusive, that
+     * appear in the tree, in order.<br>
+     * 
+     * <b>Assignment requirement:</b>
+     * The execution time of this method must be O(k + log N), where
+     * N = number of nodes in tree, and k = number of nodes in range.
+     *
+     * @param low the lower end of the range
+     * @param high the higher end of the range
+     * @return a ordered list of all values present in the tree
+     *      which fall into the specified range
+     */
+    public ArrayList<T> reportValuesInRange(T low, T high) {
+        // if user inputed range in reverse order, swap low and high
+        if (high.compareTo(low) < 0) {
+            T temp = high;
+            high = low;
+            low = temp;
+        }
+        ArrayList<T> array = new ArrayList<T>();
+        this.reportValuesInRange(this.root, low, high, array);
+        return array;
+    }
+
+    /**
+     * Private helper method to recusively return array list in range, in order.
+     * @param curr the current node
+     * @param low the lower bound of the range (inclusive)
+     * @param high the upper bound of the range (inclusive)
+     * @param array the ArrayList to fill 
+     */
+    private void reportValuesInRange(AvlNode<T> curr, T low, 
+                                                 T high, ArrayList<T> array) {
+        if (curr == null) {
+            return;
+        }
+        int compareLow = curr.element.compareTo(low);
+        int compareHigh = curr.element.compareTo(high);
+        if (compareLow > 0) {   // low < curr
+            this.reportValuesInRange(curr.left, low, high, array);
+        }
+        if (compareLow >= 0 && compareHigh <= 0) {   // low <= curr <= high
+            array.add(curr.element);
+        }
+        if (compareHigh < 0) {   // curr < high
+            this.reportValuesInRange(curr.right, low, high, array);
+        }
+    }
+
+
+    /** 
+     * Internal method to perform rotations needed to balance this subtree.
+     * Assume curr is either balanced or within one of being balanced.
+     * @param curr subtree that needs to become balanced
+     * @return root of now-balanced subtree
+     */
+    private AvlNode<T> balance(AvlNode<T> curr) {
+        if (curr == null) {
+            return curr;
+        }
+        
+        if (this.height(curr.left) - this.height(curr.right) 
+            > ALLOWED_IMBALANCE) {
+            if (this.height(curr.left.left) >= this.height(curr.left.right)) {
+                curr = this.performRightRotation(curr);
+            } else {
+                curr = this.performLeftRightCombo(curr);
+            }
+        } else if (this.height(curr.right) - this.height(curr.left) 
+            > ALLOWED_IMBALANCE) {
+
+            if (this.height(curr.right.right) >= this.height(curr.right.left)) {
+                curr = this.performLeftRotation(curr);
+            } else {
+                curr = this.performRightLeftCombo(curr);
+            }
+        }
+        curr.height = Math.max(this.height(curr.left), 
+            this.height(curr.right)) + 1;
+        return curr;
+    }
+    
+    
+    /**
+     * Internal method to insert into a subtree.
+     * @param x the item to insert
+     * @param curr the node that roots the subtree
+     * @return the new root of the subtree
+     */
+    private AvlNode<T> insert(T x, AvlNode<T> curr) {
+        if (curr == null) {
+            return new AvlNode<>(x, null, null);
+        }
+        
+        int compareResult = x.compareTo(curr.element);
+        
+        if (compareResult < 0) {
+            curr.left = this.insert(x, curr.left);
+        } else if (compareResult > 0) {
+            curr.right = this.insert(x, curr.right);
+        }
+        //else we have a duplicate; do nothing
+
+        return this.balance(curr);
+    }
+
+
+    /**
+     * Internal method to find the smallest item in a subtree.
+     * @param curr the node that roots the tree
+     * @return node containing the smallest item
+     */
+    private AvlNode<T> findMin(AvlNode<T> curr) {
+        if (curr == null) {
+            return curr;
+        }
+
+        while (curr.left != null) {
+            curr = curr.left;
+        }
+        return curr;
+    }
+
+
+    /**
+     * Internal method to find the largest item in a subtree.
+     * @param curr the node that roots the tree
+     * @return node containing the largest item
+     */
+    private AvlNode<T> findMax(AvlNode<T> curr) {
+        if (curr == null) {
+            return curr;
+        }
+
+        while (curr.right != null) {
+            curr = curr.right;
+        }
+        return curr;
+    }
+
+
+    /**
+     * Internal method to find an item in a subtree.
+     * @param x is item to search for
+     * @param curr the node that roots the tree
+     * @return true if x is found in subtree
+     */
+    private boolean contains(T x, AvlNode<T> curr) {
+        while (curr != null) {
+            int compareResult = x.compareTo(curr.element);
+            
+            if (compareResult < 0) {
+                curr = curr.left;
+            } else if (compareResult > 0) {
+                curr = curr.right;
+            } else {
+                return true;    // Match
+            }
+        }
+
+        return false;   // No match
+    }
+
+
+    /**
+     * Internal method to print a subtree in sorted order.
+     * @param curr the node that roots the tree
+     */
+    private void printTree(AvlNode<T> curr) {
+        if (curr != null) {
+            this.printTree(curr.left);
+            System.out.println(curr.element);
+            this.printTree(curr.right);
+        }
+    }
+
+
+    /**
+     * Return the height of node t, or -1, if null.
+     * @param curr  the node whose height is wanted
+     * @return the height of the given node, or -1 if null
+     */
+    private int height(AvlNode<T> curr) {
+        if (curr == null) {
+            return -1;
+        }
+        return curr.height;
+    }
+
+
+    /** 
+     * Perform a "simple right" rotation; that is, rotate binary tree
+     * node with left child.
+     * Update heights, then return new root.
+     * @param curr root of subtree where rotation should occur
+     * @return root of the modified subtree
+     */
+    private AvlNode<T> performRightRotation(AvlNode<T> curr) {
+        AvlNode<T> child = curr.left;
+        curr.left = child.right;
+        child.right = curr;
+        curr.height = Math.max(this.height(curr.left), 
+            this.height(curr.right)) + 1;
+        child.height = Math.max(this.height(child.left), curr.height) + 1;
+        return child;
+    }
+
+
+    /**
+     * Perform a "simple left" rotation; that is, rotate binary tree
+     * node with right child.
+     * Update heights, then return new root.
+     * @param curr root of subtree where rotation should occur
+     * @return root of the modified subtree
+     */
+    private AvlNode<T> performLeftRotation(AvlNode<T> curr) {
+        AvlNode<T> child = curr.right;
+        curr.right = child.left;
+        child.left = curr;
+        curr.height = Math.max(this.height(curr.left), 
+            this.height(curr.right)) + 1;
+        child.height = Math.max(this.height(child.right), curr.height) + 1;
+        return child;
+    }
+
+
+    /**
+     * Perform a "left-right combo" rotation; that is, rotate curr's
+     * left child with curr's left-right grandchild, then curr with
+     * its new left child.
+     * Update heights, then return new root.
+     * @param curr root of subtree where rotation should occur
+     * @return root of the modified subtree
+     */
+    private AvlNode<T> performLeftRightCombo(AvlNode<T> curr) {
+        curr.left = this.performLeftRotation(curr.left);
+        return this.performRightRotation(curr);
+    }
+
+
+    /**
+     * Perform a "right-left combo" rotation; that is, rotate curr's
+     * right child with curr's right-left grandchild; then curr with 
+     * its new right child.
+     * Update heights, then return new root.
+     * @param curr root of subtree where rotation should occur
+     * @return root of the modified subtree
+     */
+    private AvlNode<T> performRightLeftCombo(AvlNode<T> curr) {
+        curr.right = this.performRightRotation(curr.right);
+        return this.performLeftRotation(curr);
+    }
+
+
+    /**
+     * A node in an AVL tree.
+    */
+    private static class AvlNode<T> {
+
+        /** The data in the node. */
+        T element;
+        /** Left child. */
+        AvlNode<T> left;
+        /** Right child. */
+        AvlNode<T> right;
+        /** Height of node within its tree. */
+        int height;
+
+
+        /**
+         * Construct a new leaf node containing data.
+         * @param theElement data to store in the node.
+         */
+        AvlNode(T theElement) {
+            this(theElement, null, null);
+        }
+
+
+        /**
+         * Construct a new node containing data, with specified subtrees.
+         * @param theElement data to store in the node
+         * @param lt the root of the left subtree
+         * @param rt the root of the right subtree
+         */
+        AvlNode(T theElement, AvlNode<T> lt, AvlNode<T> rt) {
+            this.element  = theElement;
+            this.left = lt;
+            this.right = rt;
+            this.height = 0;
+        }
+
+    }   // end inner class AvlNode
+
+    /**
+     * Returns an Iterator for the Avl Tree.
+     * @return the iterator
+     */
+    public Iterator<T> iterator() {
+        return new AvlTreeIterator<T>(this);
+    }
+
+    /**
+     * An inner class for the iterator.
+     */
+    private class AvlTreeIterator<T extends Comparable<? super T>> 
+                                             implements Iterator<T> {
+
+        /** ArrayList of items in postorder. */
+        private ArrayList<T> items;
+
+        /** The index where iterator is in the array. */
+        private int index;
+
+        /** The number of elements in the tree. */
+        private int size;
+
+        /**
+         * Create an AvlTreeIterator.
+         * @param inTree the AvlTree to iterate over
+         */
+        public AvlTreeIterator(AvlTree inTree) {
+            this.items = new ArrayList<T>();
+            this.postorder(inTree.root);
+            this.size = this.items.size();
+            this.index = 0;
+        }
+
+        /**
+         * Helper function to fill instance array in postorder.
+         * @param curr the current node
+         */
+        private void postorder(AvlNode<T> curr) {
+            if (curr == null) {
+                return;
+            }
+            this.postorder(curr.left);
+            this.postorder(curr.right);
+            this.items.add(curr.element);
+        }
+
+        /**
+         * See if the iterator has another element.
+         * @return true if there is one, false otherwise
+         */
+        public boolean hasNext() {
+            return this.index < this.size;
+        }
+
+        /**
+         * Get the next element in the AvlTree iterator.
+         * @return the next element
+         */
+        public T next() {
+            if (this.hasNext()) {
+                T elem = this.items.get(this.index);
+                this.index++;
+                return elem;
+            }
+            return null;
+        }
+
+        /**
+         * Remove function is not implemented for the iterator.
+         */
+        public void remove() {
+            throw new UnsupportedOperationException("remove is not defined");
+        }
+
+    }   // end inner class AvlTreeIterator
+
+
+}   // end class AvlTree

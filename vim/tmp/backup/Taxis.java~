@@ -1,0 +1,274 @@
+//Taxis.java
+
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.util.LinkedList;
+import java.util.HashMap;
+/**
+ * Main driver class for Taxi routing.
+ */
+class Taxis {
+    /** Number of commandline args needed. */
+    static final int NUM_ARGS = 4;
+    /** k closest drivers. */
+    int k;
+    /** Graph of locations and edges. */
+    Graph<String> graph;
+    /** String storing numbered locations. */
+    String[] mapLocs;
+    /** Driver ID and location. */
+    HashMap<String, String> drivers;
+
+    /**
+     * Constructor to set up taxis.
+     * @param  numDrivers  number of drivers.
+     * @param  locFile     file name for locations.
+     * @param  connectFile edges file.
+     * @param  driverLoc   locations of drivers.
+     */
+    public Taxis(int numDrivers, String locFile, 
+        String connectFile, String driverLoc) {
+        this.k = numDrivers;
+        this.graph = new Graph<String>();
+        this.drivers = new HashMap<>();
+        this.readLoc(locFile);
+        this.readConn(connectFile);
+        this.readDrivers(driverLoc);
+    }
+
+    /**
+     * Driver function for taxi functionatlity.
+     */
+    public void driver() {
+        this.printLocations();
+        System.out.print("\nEnter number of recent " 
+            + "client pickup request location: ");
+        Scanner input = new Scanner(System.in);
+        String response = "";
+        do {
+            try {
+                response = input.nextLine().trim();
+                response = this.getNode(Integer.parseInt(response));
+            } catch (IllegalArgumentException e) {
+                System.out.println("try again, choice out of bounds");
+                continue;
+            }
+            break;
+        } while (true);
+
+        this.getDrivers(response, input);
+    }
+
+    /**
+     * Read in from map location file.
+     * @param  locFile map location file.  
+     */
+    private void readLoc(String locFile) {
+        System.out.println("\n" + "#########################"
+            + "\nCollecting map locations from " + locFile 
+            + "....");
+        String temp = "";
+        try {
+            Scanner nodes = new Scanner(new File(locFile));
+            int start = 1;
+            while (nodes.hasNextLine()) {
+                String loc1 = nodes.nextLine().trim();
+                temp += "\t" + loc1;
+                this.graph.addNode(loc1);
+                start++;
+            }
+            this.mapLocs = temp.split("\t");
+            System.out.println(start - 1 + " locations input.\n");
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Read in connections from file..
+     * @param  connectFile map connections file.  
+     */
+    private void readConn(String connectFile) {
+        System.out.println("Collecting map connections from " 
+            + connectFile + "....");
+        try {
+            Scanner edges = new Scanner(new File(connectFile));
+            String line = "";
+            int counter = 0;
+            while (edges.hasNextLine()) {
+                line = edges.nextLine().trim();
+                line = line.replace("(", "");
+                String[] params = line.split(",");
+                String loc1 = params[0];
+                String loc2 = params[1].split("\\)")[0].trim();
+                int weight = Integer.parseInt(params[1].split("\\)")[1].trim());
+                this.graph.addWeightedEdge(loc1, loc2, weight);
+                counter++;
+            }
+            System.out.println(counter + " connections input.\n");
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+            System.exit(1);
+        }
+    }
+
+    /**
+     * Read in driver info from file.
+     * @param  driverLoc driver info file.  
+     */
+    private void readDrivers(String driverLoc) {
+        System.out.println("Collecting driver info from " 
+            + driverLoc + "....");
+        int counter = 0;
+        try {
+            Scanner driver = new Scanner(new File(driverLoc));
+            while (driver.hasNextLine()) {
+                String id = "";
+                while (driver.hasNextInt()) {
+                    id = driver.nextInt() + id;
+                }
+                String node = driver.nextLine().trim();
+                this.drivers.put(id, node);
+                counter++;
+            }
+            System.out.println(counter + " drivers input.\n");
+        } catch (FileNotFoundException e) {
+            e.getMessage();
+        }
+    }
+
+    /**
+     * Get the closest drivers to the pickup location.
+     * @param dest destination.
+     * @param in   scanner input.
+     */
+    private void getDrivers(String dest, Scanner in) {
+        AdaptablePQ<Entry> d = this.getPaths(dest);
+        HashMap<String, Graph<String>.Path> paths = new HashMap<>();
+        for (int i = 0; i < this.k; i++) {
+            Entry d1 = d.delMin();
+            paths.put(d1.driver, d1.path);
+        }
+        System.out.println("\nThe " + this.k 
+            + " drivers to alert about this pickup are:\n");
+        for (String id : paths.keySet()) {
+            System.out.println(id + " " + this.drivers.get(id));
+        }
+        System.out.print("\n\nEnter the ID number  " 
+            + "of the driver who responded: ");
+        String response = in.nextLine().trim();
+        System.out.println("\nThe recommended route for driver " 
+            + response +  " is:");
+        this.printPath(paths.get(response).getPath());
+        System.out.println("\tExpected Total Time: "
+            + paths.get(response).getDistance());
+    }
+
+    /**
+     * Print numbered locations.
+     */
+    private void printLocations() {
+        System.out.println("Map locations are:\n");
+        for (int i = 1; i < this.mapLocs.length; i++) {
+            System.out.println("\t" 
+                + (i) + " " + this.mapLocs[i]);
+        }
+    }
+
+    /**
+     * Dijkstra helper method.
+     * @param source start node.
+     * @param end    end node.
+     * @return  Path object.
+     */
+    private Graph<String>.Path dijkstra(String source, String end) {
+        return this.graph.dijkstra(source, end);
+    }
+
+    /**
+     * Gets paths of all drivers.
+     * @param  dest destination node.
+     * @return AdaptablePQ of paths
+     */
+    private AdaptablePQ<Entry> getPaths(String dest) {
+        AdaptablePQ<Entry> paths = new AdaptablePQ<Entry>(this.drivers.size());
+        for (HashMap.Entry<String, String> d : this.drivers.entrySet()) {
+            Graph<String>.Path pt = this.dijkstra(d.getValue(), dest);
+            paths.insert(new Entry(d.getKey(), pt), pt.getDistance());
+        }
+        
+        return paths;
+    }
+
+    /**
+     * Helper method for getDrivers.
+     * @param  locs Path object.
+     */
+    private void printPath(LinkedList<String> locs) {
+        for (int i = 0; i < locs.size() - 1; i++) {
+            System.out.println("\t(" + locs.get(i) + ", "
+                + locs.get(i + 1) + ")");
+        } 
+
+    }
+
+    /**
+     * Helper function for getting dest node.
+     * @param  index number chosen.
+     * @return       node chosen.
+     */
+    private String getNode(int index) {
+        if (index > this.mapLocs.length + 1) {
+            throw new IllegalArgumentException(
+                "Node chosen out of range");
+        }
+        return this.mapLocs[index];
+    }
+
+    /**
+     * Main driver for taxi class.
+     * @param args commandline args.
+     */
+    public static void main(String[] args) {
+        if (args.length != NUM_ARGS) {
+            throw new IllegalArgumentException("Too few/too many arguments."
+                + "Requires 4 arguments");
+        }
+
+        Taxis taxi = new Taxis(Integer.parseInt(args[0]), 
+            args[1], args[2], args[NUM_ARGS - 1]);
+        taxi.driver();
+
+    }
+
+    /**
+     * Helper class to store drivers and paths.
+     */
+    public class Entry {
+        /** Driver ID. */
+        String driver;
+        /** Path and distance. */
+        Graph<String>.Path path;
+
+        /**
+         * Constructor.
+         * @param  d driver id.
+         * @param  g path object.
+         */
+        public Entry(String d, Graph<String>.Path g) {
+            this.driver = d;
+            this.path = g;
+        }
+
+        /**
+         * Getter for driver id.
+         * @return driver id.
+         */
+        public String getDriver() {
+            return this.driver;
+        }
+    }
+
+}

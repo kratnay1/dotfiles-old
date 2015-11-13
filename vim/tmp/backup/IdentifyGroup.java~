@@ -1,0 +1,239 @@
+/*
+ * Uses Bilbao's Identify Group routine to identify groups
+ * constructed from the coset space of Gamma_B \ Gamma
+ */
+
+
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.*;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.ArrayList;
+import java.util.Iterator;
+
+
+// array list of symmorphic group numbers
+private static ArrayList<String> sgroups;
+
+
+// constructor. fills list of symmophic group numbers from file
+public ArgTest() {
+    this.sgroups = new ArrayList<String>();
+    try {
+        Scanner scan1 = new Scanner(new File("Sgroups.dat"));
+        while (scan1.hasNextLine()) {
+            sgroups.add(scan1.nextLine());
+        }
+    } catch (FileNotFoundException e) { }
+}
+
+
+// returns a list of all combinations of two Lists of cosets
+private ArrayList<String> combineTwoLists(ArrayList<String> list1, ArrayList<String> list2) {
+    ArrayList<String> combined = new ArrayList<String>();
+    String combStr;
+    for (String str1 : list1) {
+        for (String str2 : list2) {
+            combStr = "";
+            combStr = str1 + "\n" + str2;
+            combined.add(combStr);
+        }
+    }
+    return combined;
+}
+
+
+// returns a list of all combinations of all Lists of cosets
+private ArrayList<String> getCombinations(ArrayList<ArrayList<String>> allLists) {
+    ArrayList<String> combList = new ArrayList<String>(allLists.get(0));
+    for (int i = 1; i < allLists.size(); i++) {
+        combList = combineTwoLists(combList, allLists.get(i));
+    }
+    return combList;
+}
+
+
+// returns a list of cosets from the cosets file
+private ArrayList<ArrayList<String>> makeCosetList(String filename) {
+    ArrayList<ArrayList<String>> cosetList = new ArrayList<ArrayList<String>>();
+    // keep only identity from Coset 1 
+    ArrayList<String> identity = new ArrayList<String>();
+    identity.add("x,y,z");
+    cosetList.add(identity);
+    
+    String line = "";
+    try {
+        Scanner scan2 = new Scanner(new File(filename));
+        scan2.nextLine(); // "Coset 1:"
+        for (; !scan2.nextLine().startsWith("C") ;) { }
+
+        ArrayList<String> cosets = new ArrayList<String>();
+
+        while (scan2.hasNextLine()) {
+            line = scan2.nextLine();
+            if (line.startsWith("(")) {
+                line = line.replace("(", "");
+                line = line.replace(")", "");
+                cosets.add(line);
+            }
+            if (line.startsWith("C")) {
+                cosetList.add(cosets);
+                cosets.clear();
+            }
+        }
+        cosetList.add(cosets);
+    } catch (FileNotFoundException e) { }
+
+    return cosetList;
+}
+
+
+public class FindSymGroups {
+
+    public static void main(String[] args) throws Exception {
+        try (final WebClient webClient = new WebClient()) {
+
+            // Initialize strings to hold lines from files
+            String line = "";
+            String bnum = "";
+            String tmatrix = "";
+
+            try {
+                // read from the file containing normal B groups and the transformations
+                Scanner scan = new Scanner(new File("normalB_" + args[0]));
+
+                // for each normal B group and given transformation matrix in file
+                while (scan.hasNextLine()) {
+
+                    // get the B group number
+                    bnum = scan.nextLine();
+                    // get the transformation matrix
+                    for (int i=0; i<3; i++) {
+                        line = scan.nextLine();
+                        tmatrix += line;
+                    }
+
+                    scan.nextLine(); // blank line
+
+                    // trim leading whitespace and store values of matrix in array
+                    tmatrix = tmatrix.trim();
+                    String[] tvalues = tmatrix.split("\\s+");
+
+                    // access COSETS from the Bilbao server
+                    final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cryst/cosets.html");
+
+                    // get text fields
+                    final HtmlInput sup = page.getElementByName("super");
+                    final HtmlInput sub = page.getElementByName("sub");
+                    final HtmlInput x1 = page.getElementByName("x1");
+                    final HtmlInput x2 = page.getElementByName("x2");
+                    final HtmlInput x3 = page.getElementByName("x3");
+                    final HtmlInput x4 = page.getElementByName("x4");
+                    final HtmlInput y1 = page.getElementByName("y1");
+                    final HtmlInput y2 = page.getElementByName("y2");
+                    final HtmlInput y3 = page.getElementByName("y3");
+                    final HtmlInput y4 = page.getElementByName("y4");
+                    final HtmlInput z1 = page.getElementByName("z1");
+                    final HtmlInput z2 = page.getElementByName("z2");
+                    final HtmlInput z3 = page.getElementByName("z3");
+                    final HtmlInput z4 = page.getElementByName("z4");
+
+                    // set text fields with information from normal B group file
+                    sup.setValueAttribute(args[0]);
+                    sub.setValueAttribute(bnum);
+                    x1.setValueAttribute(tvalues[0]);
+                    x2.setValueAttribute(tvalues[1]);
+                    x3.setValueAttribute(tvalues[2]);
+                    x4.setValueAttribute(tvalues[3]);
+                    y1.setValueAttribute(tvalues[4]);
+                    y2.setValueAttribute(tvalues[5]);
+                    y3.setValueAttribute(tvalues[6]);
+                    y4.setValueAttribute(tvalues[7]);
+                    z1.setValueAttribute(tvalues[8]);
+                    z2.setValueAttribute(tvalues[9]);
+                    z3.setValueAttribute(tvalues[10]);
+                    z4.setValueAttribute(tvalues[11]);
+
+                    // click on 'Submit'
+                    HtmlSubmitInput show = page.getElementByName("show");
+                    final HtmlPage page2 = show.click();
+
+                    // write left coset decomp of G with respect to B to file
+                    try {
+                        PrintWriter writer = new PrintWriter("cosets_file");
+                        writer.println(page2.getElementsByTagName("pre").get(1).getTextContent());
+                        writer.close();
+                    } catch (FileNotFoundException e) { }
+
+
+
+                    ArrayList<ArrayList<String>> cosetList = new ArrayList<ArrayList<String>>();
+
+                    line = "";
+
+                    try {
+                        Scanner scan2 = new Scanner(new File("cosets_file"));
+                        scan2.nextLine(); // "Coset 1:"
+                        for (; !scan2.nextLine().startsWith("C") ;) { }
+
+                        ArrayList<String> cosets = new ArrayList<String>();
+
+
+                        while (scan2.hasNextLine()) {
+
+                            line = scan2.nextLine();
+
+                            if (line.startsWith("(")) {
+                                line = line.replace("(", "");
+                                line = line.replace(")", "");
+                                cosets.add(line);
+                            }
+                            if (line.startsWith("C")) {
+                                cosetList.add(cosets);
+                                cosets.clear();
+                            }
+                        }
+                        cosetList.add(cosets);
+
+                    } catch (FileNotFoundException e) { }
+
+
+
+                    // final HtmlPage page3 = webClient.getPage("http://www.cryst.ehu.es/cgi-bin/cryst/programs/checkgr.pl?tipog=gesp");
+ 
+
+                    // List<HtmlForm> forms = page3.getForms();
+
+                    // HtmlTextArea text = forms.get(0).getTextAreaByName("generators");
+
+                    // text.setText("x,y,z\n-x,-y,z+1/2");
+
+                    // System.out.println(text.getText());
+                    
+                    
+                    // HtmlSubmitInput submit = page3.getElementByName("list");
+
+                    // final HtmlPage page4 = submit.click();
+
+                    
+
+
+
+                }
+
+            } catch (FileNotFoundException e) { }
+
+        }
+
+    }
+
+}
+
+
+
+
+
+

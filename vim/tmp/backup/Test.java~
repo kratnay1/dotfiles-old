@@ -1,0 +1,45 @@
+import java.lang.Math;
+
+
+
+public class Test {
+
+
+    public static double parseString(String fraction) {
+        if (fraction.contains("/")) {
+            String[] frac = fraction.split("/");
+            return Double.parseDouble(frac[0]) / Double.parseDouble(frac[1]);
+        } else {
+            return Double.parseDouble(fraction);
+        }
+    }
+
+    
+    public static double getDeterminant(String[] tvalues) {
+        double[] a = new double[tvalues.length];
+        for (int i=0; i<tvalues.length; i++) {
+            a[i] = parseString(tvalues[i]);
+        }
+        return a[0]*(a[5]*a[10]-a[6]*a[9]) - a[1]*(a[4]*a[10]-a[6]*a[8]) + a[2]*(a[4]*a[9]-a[5]*a[8]);
+    }
+
+    public static void main(String[] args) {
+
+
+        String[] tvalues = {"8", "1/2", "6", "0", "-3/2", "-5", "-60", "0", "70/4", "13", "-1", "0"};
+        System.out.println(getDeterminant(tvalues));
+
+        double dub = 5;
+        int integer = 7;
+        System.out.println(dub/integer);
+
+
+    }
+
+
+
+
+
+
+}
+

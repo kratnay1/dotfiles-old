@@ -1,0 +1,34 @@
+import com.gargoylesoftware.htmlunit.*;
+import com.gargoylesoftware.htmlunit.html.*;
+import java.util.List;
+
+public class getMatrices {
+    public static void main(String[] args) throws Exception {
+        try (final WebClient webClient = new WebClient()) {
+            
+            //long startTime = System.nanoTime();
+
+            final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cgi-bin/cryst/programs/nph-subggraph?id=&index=" + args[2] + "&super=" + args[0] + "&sub=" + args[1] + "&client=&path=latt@chains_tab&what=print");
+    
+            List<HtmlAnchor> anchors = page.getAnchors();
+
+            for (HtmlAnchor link : anchors) {
+                if (link.getHrefAttribute().startsWith("nph-tr")) {
+                    final HtmlPage page2 = (HtmlPage)link.openLinkInNewWindow();
+                    DomNodeList<DomElement> m = page2.getElementsByTagName("pre");
+                    for (DomElement elem : m) {
+                        System.out.println(elem.getTextContent());
+                    }
+                }
+            }
+            
+            //long endTime = System.nanoTime();
+            //long duration = ((endTime - startTime)*0.000000001)/60;
+            //System.out.println(duration);
+        }
+    }
+}
+
+
+
+

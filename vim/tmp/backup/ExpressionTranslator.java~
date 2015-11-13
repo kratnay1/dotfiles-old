@@ -1,0 +1,147 @@
+//ExpressionTranslator.java
+
+/** 
+ *    Kushan Ratnayake
+ *    Data Structures
+ *    Mar 3rd 2015
+ *    Homework 2
+ *    Login: kratnay1
+ */
+
+import java.util.Scanner;
+
+/**
+ *    Class that translates a postfix expression to prefix and infix 
+ *    using the ExpressionTree class.
+ */
+public final class ExpressionTranslator {
+
+    /**
+     * Private constructor to suppress checkstyle warning.
+     */
+    private ExpressionTranslator() {
+        //does nothing
+    }
+
+    /**
+     *    Creates an ExpressionTree from a line of input. 
+     *    Throws exception if not valid.
+     *    @param  line the string of input to make the tree with
+     *    @return  the ExpressionTree that contains the expression
+     */
+    public static ExpressionTree createTree(String line) {
+        // if empty expression 
+        if (line.length() == 0) {
+            throw new MalformedPostfixExpressionException("Empty expression.");
+        }
+        Stack226<ExpressionTree> stack = new Stack226Array<ExpressionTree>();
+        String[] strArray = line.split("\\s");
+
+        //initialize temp ExpressionTrees
+        ExpressionTreeToken temp = new ExpressionTreeToken("temp");
+        ExpressionTree leftTree = new ExpressionTree(temp);
+        ExpressionTree rightTree = new ExpressionTree(temp);
+
+        //create tree
+        for (int i = 0; i < strArray.length; i++) {
+            ExpressionTreeToken token = new ExpressionTreeToken(strArray[i]);
+            if (token.isOperator()) {
+                try {
+                    rightTree = stack.pop();
+                    leftTree = stack.pop();
+                    ExpressionTree newTree =
+                         new ExpressionTree(token, leftTree, rightTree);
+                    stack.push(newTree);
+                } catch (StackEmptyException e) {
+                    throw new 
+                     MalformedPostfixExpressionException("Too many operators.");
+                }
+            } else {
+                ExpressionTree operand = new ExpressionTree(token);
+                stack.push(operand);
+            }
+        }
+        if (stack.size() != 1) {
+            throw new MalformedPostfixExpressionException("Too many operands.");
+        }
+        return stack.pop();
+    }
+
+    /**
+     *    Translate the expression contained in the 
+     *    ExpressionTree to prefix notation.
+     *    @return the string in prefix notation
+     *    @param  tree the ExpressionTree 
+     */
+    public static String translatePrefix(ExpressionTree tree) {
+        String result = "";
+        for (ExpressionTreeToken item : tree) {
+            result += item.toString() + " ";
+        }
+        return result.trim();
+    }
+
+    /**
+     *    Gets a line of input from stdin and returns a string.
+     *    @return the string
+     */
+    public static String getInput() {
+        Scanner scan = new Scanner(System.in);
+        System.out.println("Please enter an expression "
+                            + "with spaces between each token:");
+        String line = scan.nextLine();
+        return line;
+    }
+
+    /**
+     *    Returns true if user chooses to enter 
+     *    another expression, otherwise false.
+     *    @return true or false
+     */
+    public static boolean tryAgain() {
+        Scanner scan = new Scanner(System.in);
+        while (true) {
+            System.out.print("\nEnter another expression? [Y/N]");
+            char opt = scan.next().charAt(0);
+            if (opt == 'n' || opt == 'N') {
+                return false;
+            }
+            if (opt == 'y' || opt == 'Y') {
+                return true;
+            }
+        }
+    }
+
+    /** 
+    *    Main method: gets input, builds ExpressionTree
+    *     and translates the expression.
+    *    @param  args the arguments (none in this case)
+    */
+    public static void main(String[] args) {
+        String expression = "";
+        System.out.println("\nThis program collects postfix "
+            + "expressions which consist of operands and the "
+            + "operators +, -, *, or /. \nIt then generates "
+            + "equivalent expressions in various notations.");
+        do {
+            expression = getInput();
+            try {
+                ExpressionTree tree = createTree(expression);
+                System.out.println("Equivalent expressions are: ");
+                System.out.println("Postfix: " + tree.postOrder());
+                System.out.println("Prefix: " + translatePrefix(tree));
+                System.out.println("Infix: " + tree.getParenthesizedInfix());
+            } catch (MalformedPostfixExpressionException e) {
+                System.out.println("Uh oh. That expression "
+                    + "contained a problem.");
+                System.out.println("MalformedPostfixExpressionException "
+                    + e.getMessage());
+            }
+        } while (tryAgain());
+
+        System.out.println("Goodbye.");
+    } 
+
+}  // end ExpressionTranslator class
+
+
