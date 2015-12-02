@@ -24,7 +24,7 @@ alias doc='cd ~/Documents'
 alias desk='cd ~/Desktop'
 alias lab='cd ~/Desktop/Research/'
 alias jaipur='cd ~/Intermediate_Programming/Project/jaipur/'
-alias vibash='vi ~/.bashrc'
+alias bashrc='vi ~/.bashrc'
 alias ugrad='g++-mp-4.8'
 alias prog='cd ~/Desktop/Data_Structures/'
 alias checkstyle='java -jar checkstyle.jar -c jhu_checks.xml'
@@ -39,9 +39,12 @@ alias edit='for i in $(\ls -d [1-9]*); do ./edit $i; done'
 alias space='cd ~/Documents/MATLAB/Research/SpaceGroupDecomposition'
 alias sshbio='ssh compbio2@kirin.kit.jhu.edu'
 alias sftpbio='sftp compbio2@kirin.kit.jhu.edu'
+alias vmd='/Applications/VMD\ 1.9.app/Contents/MacOS/startup.command'
 alias conf='vi ~/.tmux.conf'
 alias vi='vim'
 alias g='vim --remove-silent'
+alias .vim='cd ~/.vim'
+alias dotfiles='cd ~/dotfiles'
 alias ph='cd ~/Space_Group_Decomp/'
 alias k='clear'
 alias reload="exec $SHELL -l"
@@ -164,6 +167,7 @@ export PYTHONPATH=/Library/Python/2.7/site-packages:$PYTHONPATH
 
 #export PATH=/Users/Kushan/Downloads/phantomjs-1.9.8-macosx/bin:$PATH
 export PATH=/Users/Kushan/Downloads:$PATH
+export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin"
 
 # Base16 Shell
 BASE16_SHELL="$HOME/.config/base16-shell/base16-default.dark.sh"

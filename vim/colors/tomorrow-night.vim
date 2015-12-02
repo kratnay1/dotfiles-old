@@ -349,6 +349,24 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
 	call <SID>X("pythonRepeat", s:aqua, "", "")
 	call <SID>X("pythonExClass", s:orange, "", "")
 
+    " Java Highlighting
+    call <SID>X("javaInclude", s:purple, "", "")
+    call <SID>X("javaStatement", s:purple, "", "")
+    call <SID>X("javaOperator", s:purple, "", "")
+    call <SID>X("javaIdentifier", s:purple, "", "")
+    call <SID>X("javaKeyword", s:purple, "", "")
+    call <SID>X("javaType", s:aqua, "", "")
+    call <SID>X("javaSpecial", s:purple, "", "")
+    call <SID>X("javaConditional", s:purple, "", "")
+    call <SID>X("javaSymbol", s:purple, "", "")
+    call <SID>X("javaRepeat", s:purple, "", "")
+    call <SID>X("javaException", s:purple, "", "")
+    call <SID>X("javaFunction", s:blue, "", "")
+    call <SID>X("javaPreCondit", s:purple, "", "")
+    call <SID>X("javaRepeat", s:purple, "", "")
+    call <SID>X("javaExClass", s:orange, "", "")
+    call <SID>X("javaBoolean", s:blue, "", "")
+
 	" JavaScript Highlighting
 	call <SID>X("javaScriptBraces", s:foreground, "", "")
 	call <SID>X("javaScriptFunction", s:purple, "", "")
@@ -495,3 +513,5 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
 endif
 
 set background=dark
+hi! CursorLineNr ctermfg = 242
+hi! LineNr ctermfg = 242

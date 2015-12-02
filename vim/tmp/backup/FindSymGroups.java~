@@ -24,6 +24,9 @@ public class FindSymGroups {
 
     // array list of symmorphic group numbers
     private static ArrayList<String> sgroups;
+    // hashtable of group number / centering number pairs
+    private static Hashtable<String, Integer> cenNums;
+
 
 
     // constructor. fills list of symmophic group numbers from file
@@ -35,6 +38,8 @@ public class FindSymGroups {
                 this.sgroups.add(scan1.nextLine());
             }
         } catch (FileNotFoundException e) { }
+
+        this.cenNums = loadCenNums();
     }
 
 
@@ -98,8 +103,8 @@ public class FindSymGroups {
     }
 
 
-    public Hashtable<String, int> loadCenNums() {
-        Hashtable<String, int> cen_nums = new Hashtable<String, int>();
+    public Hashtable<String, Integer> loadCenNums() {
+        Hashtable<String, Integer> cen_nums = new Hashtable<String, Integer>();
         try {
             Scanner scan = new Scanner(new File("dict2.txt"));
             String line = "";
@@ -168,6 +173,12 @@ public class FindSymGroups {
                     // trim leading whitespace and store values of matrix in array
                     tmatrix = tmatrix.trim();
                     String[] tvalues = tmatrix.split("\\s+");
+
+                    // skip to next matrix if extra translational copies are contained
+                    // ie. if the lattice of the conjugated coset space is coarser
+                    
+                    // if (findSymGroups.getDeterminant(tvalues) / cenNums.get(bnum) ...
+
 
                     // access COSETS from the Bilbao server
                     final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cryst/cosets.html");
@@ -296,7 +307,7 @@ public class FindSymGroups {
 
                         System.out.println(bnum);
                         for (String snum : sNums) {
-                            if (!snum.compareTo("1")) {
+                            if (!snum.equals("1")) {
                                 System.out.println(snum);
                             }
                         }

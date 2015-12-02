@@ -98,7 +98,7 @@ let s:palette.gui.darkcyan   = { 'dark' : "#005f5f", 'light' : "#005f00" }
 let s:palette.gui.darkred    = { 'dark' : "#5f0000", 'light' : "#d7d7ff" }
 let s:palette.gui.darkpurple = { 'dark' : "#5f005f", 'light' : "#5f005f" }
 
-let s:palette.cterm.background = { 'dark' : "234", 'light' : "254" }
+let s:palette.cterm.background = { 'dark' : "235", 'light' : "254" }
 let s:palette.cterm.window     = { 'dark' : "236", 'light' : "247" }
 let s:palette.cterm.darkcolumn = { 'dark' : "234", 'light' : "244" }
 let s:palette.cterm.addbg      = { 'dark' : "65" , 'light' : "194" }
@@ -267,7 +267,7 @@ exe "hi! ColorColumn"   .s:fg_none        .s:bg_line        .s:fmt_none
 "   Cursor"
 "   CursorIM"
 exe "hi! CursorColumn"  .s:fg_none        .s:bg_line        .s:fmt_none
-exe "hi! CursorLine"    .s:fg_none        .s:bg_line        .s:fmt_none
+" exe "hi! CursorLine"    .s:fg_none        .s:bg_line        .s:fmt_none
 exe "hi! Directory"     .s:fg_blue        .s:bg_none        .s:fmt_none
 exe "hi! DiffAdd"       .s:fg_addfg       .s:bg_addbg       .s:fmt_none
 exe "hi! DiffChange"    .s:fg_changefg    .s:bg_changebg    .s:fmt_none
@@ -320,7 +320,7 @@ endif
 " ----------------------------------------------------------------------------
 exe "hi! Comment"         .s:fg_comment     .s:bg_none        .s:fmt_none
 
-exe "hi! Constant"        .s:fg_red         .s:bg_none        .s:fmt_none
+exe "hi! Constant"        .s:fg_orange         .s:bg_none        .s:fmt_none
 exe "hi! String"          .s:fg_green       .s:bg_none        .s:fmt_none
 "   Character"
 "   Number"
@@ -330,7 +330,7 @@ exe "hi! String"          .s:fg_green       .s:bg_none        .s:fmt_none
 exe "hi! Identifier"      .s:fg_purple      .s:bg_none        .s:fmt_none
 exe "hi! Function"        .s:fg_yellow      .s:bg_none        .s:fmt_none
 
-exe "hi! Statement"       .s:fg_blue        .s:bg_none        .s:fmt_none
+exe "hi! Statement"       .s:fg_purple        .s:bg_none        .s:fmt_none
 "   Conditional"
 "   Repeat"
 "   Label"
@@ -344,7 +344,7 @@ exe "hi! PreProc"         .s:fg_aqua        .s:bg_none        .s:fmt_none
 "   Macro"
 "   PreCondit"
 
-exe "hi! Type"            .s:fg_orange      .s:bg_none        .s:fmt_none
+exe "hi! Type"            .s:fg_aqua      .s:bg_none        .s:fmt_none
 "   StorageClass"
 exe "hi! Structure"       .s:fg_aqua        .s:bg_none        .s:fmt_none
 "   Typedef"
@@ -390,6 +390,21 @@ hi! link diffAdded Special
 "   diffLine
 "   diffSubname
 "   diffComment
+
+hi! CursorLine none
+hi! CursorLine ctermbg = 236
+hi! CursorLineNr ctermfg = 242
+hi! LineNr ctermfg = 242
+hi! VertSplit ctermbg = 240
+hi! VertSplit ctermfg = 240
+hi! StatusLine ctermfg = 240
+hi! StatusLineNC ctermfg = 240
+hi! StatusLine ctermbg = 222
+hi! StatusLineNC ctermbg = white
+" set bg=dark
+
+
+
 
 "}}}
 "

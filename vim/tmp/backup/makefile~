@@ -9,7 +9,7 @@ all: classes
 classes: $(CLASSES:.java=.class)
 
 run:
-		java FindSymGroups 20 > normalB_S_20
+		java Test 
 
 clean:
-		rm *.class
+		rm *.class 

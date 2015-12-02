@@ -37,12 +37,14 @@ Plugin 'kien/ctrlp.vim' " fuzzy find files
 Plugin 'scrooloose/nerdtree' " file drawer, open with :NERDTreeToggle
 Plugin 'christoomey/vim-tmux-navigator'
 Plugin 'benmills/vimux'
-Plugin 'terryma/vim-expand-region'
 Plugin 'sickill/vim-pasta'
 Plugin 'mtth/scratch.vim'
 Plugin 'junegunn/goyo.vim'
-" Plugin 'SirVer/ultisnips'
+" Plugin 'rstacruz/vim-closer'
+Plugin 'SirVer/ultisnips'
 " Plugin 'honza/vim-snippets'
+Plugin 'ervandew/supertab'
+Plugin 'gorkunov/smartpairs.vim'
 
 " All of your Plugins must be added before the following line
 call vundle#end()            " required
@@ -69,7 +71,7 @@ set smartcase
 " let &guioptions = substitute(&guioptions, "t", "", "g")
 
 " Don't use Ex mode, use Q for formatting
-map Q gq
+map Q @q
 
 " CTRL-U in insert mode deletes a lot.  Use CTRL-G u to first break undo,
 " so that you can undo CTRL-U after inserting a line break.
@@ -143,12 +145,13 @@ set virtualedit=all
 set scrolloff=8
 set pastetoggle=<F2>
 set relativenumber
+set lazyredraw
 set wrap linebreak nolist
 
-nnoremap J 2<C-e>
-nnoremap K 2<C-y>
+nnoremap J 3<C-e>
+nnoremap K 3<C-y>
 nnoremap <C-e> 2<C-e>
-nnoremap <C-f> 2<C-y>
+" nnoremap <C-f> 2<C-y>
 nnoremap j gj
 nnoremap k gk
 noremap ;; ;
@@ -178,7 +181,9 @@ nnoremap <leader>4 :b4<CR>
 nnoremap <leader>5 :b5<CR>
 nnoremap <leader>e :b#<CR>
 nnoremap <leader>E :e 
+nnoremap <leader>no :e ~/Tests/.pl/notes.txt<CR
 nnoremap <leader>w <C-w>w<CR>
+map <Leader>f mmgg=G`m
 imap <C-w> <C-o><C-w>
 nnoremap C cc
 nnoremap <C-h> <C-w>h<CR>
@@ -190,11 +195,13 @@ nmap cp :cp<CR>
 nmap cl :cl<CR>
 nmap cz :cw<CR>
 nmap co :cclose<CR>
-nmap T :make<CR><CR>cz 
+nmap T :make<CR><CR>cz<Esc> 
 nmap <leader>q :wq<cr>
 imap <c-u> <Esc>u
 nmap <leader>' ysi)"
 nmap cc cL
+nnoremap n nzz
+nnoremap N Nzz
 
 
 
@@ -209,8 +216,6 @@ let g:auto_save = 1
 let g:auto_save_silent = 1
 
 colorscheme tomorrow-night
-set background=dark
-hi CursorLineNr ctermfg=Black
 
 execute pathogen#infect()
 
@@ -232,17 +237,17 @@ nmap <leader>; A;<Esc>
 " Tab completion
 " will insert tab at beginning of line,
 " will use completion if not at beginning
-set wildmode=list:longest,list:full
-function! InsertTabWrapper()
-    let col = col('.') - 1
-    if !col || getline('.')[col - 1] !~ '\k'
-        return "\<tab>"
-    else
-        return "\<c-p>"
-    endif
-endfunction
+" set wildmode=list:longest,list:full
+" function! InsertTabWrapper()
+"     let col = col('.') - 1
+"     if !col || getline('.')[col - 1] !~ '\k'
+"         return "\<tab>"
+"     else
+"         return "\<c-p>"
+"     endif
+" endfunction
 
-inoremap <Tab> <c-r>=InsertTabWrapper()<cr>
+" inoremap <Tab> <c-r>=InsertTabWrapper()<cr>
 
 set wildignore+=*.class,*.sw?,*~
 
@@ -284,15 +289,15 @@ if !isdirectory(expand(&directory))
 endif
 
 noremap ' `
-nnoremap <c-d> :%s/
+nnoremap <c-p> :%s/
 
 
 " close NERDTree after a file is opened
 let g:NERDTreeQuitOnOpen=0
 " Toggle NERDTree
-nmap <silent> <leader>k :NERDTreeToggle<cr>
+nmap <silent> <leader>t :NERDTreeToggle<cr>
 " expand to the path of the file in the current buffer
-nmap <silent> <c-k> :NERDTreeFind<cr>
+nmap <silent> <c-i> :NERDTreeFind<cr>
 
 " map fuzzyfinder (CtrlP) plugin
 " nmap <silent> <leader>t :CtrlP<cr>
@@ -316,10 +321,6 @@ map <Leader>o :VimuxCloseRunner<CR>
 map <Leader>0 :VimuxRunCommand("clear")<CR>
 
 let g:VimuxOrientation = "h"
-
-" vim-expand-region
-vmap v <Plug>(expand_region_expand)
-vmap <C-v> <Plug>(expand_region_shrink)
 
 
 nnoremap <C-W>O :call MaximizeToggle()<CR>
@@ -353,11 +354,37 @@ nmap <leader>R :so $MYVIMRC<cr>
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 
+nmap <Leader>u :UltiSnipsEdit<cr>
 " let g:UltiSnipsExpandTrigger="<tab>"
-" let g:UltiSnipsJumpForwardTrigger="<c-b>"
-" let g:UltiSnipsJumpBackwardTrigger="<c-z>"
+" let g:UltiSnipsJumpForwardTrigger="<cr>"
+" let g:UltiSnipsJumpBackwardTrigger="<s-cr>"
+
+autocmd! FileType c,cpp,java,php call CSyntaxAfter()
 
 
+set noesckeys
+set ttimeout
+set ttimeoutlen=1
+
+set timeoutlen=500
+
+hi MatchParen cterm=none ctermbg=black ctermfg=yellow
+
+function! RenameFile()
+    let old_name = expand('%')
+    let new_name = input('New file name: ', expand('%'), 'file')
+    if new_name != '' && new_name != old_name
+        exec ':saveas ' . new_name
+        exec ':silent !rm ' . old_name
+        redraw!
+    endif
+endfunction
+" map <Leader>n :call RenameFile()<cr>
+
+" Better? completion on command line
+set wildmenu
+" What to do when I press 'wildchar'. Worth tweaking to see what feels right.
+set wildmode=list:full
 
 
 
