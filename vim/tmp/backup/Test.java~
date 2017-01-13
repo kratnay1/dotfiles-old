@@ -1,49 +1,8 @@
-import java.util.Scanner;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
-import java.util.List;
-import java.util.ArrayList;
-import java.util.Hashtable;
+import java.lang.Math;
 
 
-public class Test { 
 
-    // array list of symmorphic group numbers
-    private static ArrayList<String> sgroups;
-    // hashtable of group number / centering number pairs
-    private static Hashtable<String, Integer> cenNums;
-
-    //constructor
-    public Test() {
-        this.sgroups = new ArrayList<String>();
-        try {
-            Scanner scan1 = new Scanner(new File("Sgroups.dat"));
-            while (scan1.hasNextLine()) {
-                this.sgroups.add(scan1.nextLine());
-            }
-        } catch (FileNotFoundException e) { }
-
-        this.cenNums = loadCenNums();
-    }
-
-    public Hashtable<String, Integer> loadCenNums() {
-        Hashtable<String, Integer> cen_nums = new Hashtable<String, Integer>();
-        try {
-            Scanner scan = new Scanner(new File("dict2.txt"));
-            String line = "";
-            while (scan.hasNextLine()) {
-                line = scan.nextLine();
-                String[] theline = line.split(" ");
-                for (int i=0; i < 10; i++) {
-                    cen_nums.put(theline[i], Integer.parseInt(theline[++i]));
-                }
-            }
-        } catch (FileNotFoundException e) {
-            System.exit(1);
-        }
-        return cen_nums;
-    }
+public class Test {
 
 
     public static double parseString(String fraction) {
@@ -64,82 +23,18 @@ public class Test {
         return a[0]*(a[5]*a[10]-a[6]*a[9]) - a[1]*(a[4]*a[10]-a[6]*a[8]) + a[2]*(a[4]*a[9]-a[5]*a[8]);
     }
 
-
     public static void main(String[] args) {
 
 
-        Test test = new Test();
+        String[] tvalues = {"8", "1/2", "6", "0", "-3/2", "-5", "-60", "0", "70/4", "13", "-1", "0"};
+        System.out.println(getDeterminant(tvalues));
 
-        String bnum;
-        String tmatrix;
-        String row1;
-        String row2;
-        String row3;
-
-        try {
-            Scanner scan = new Scanner(new File("normalB_17"));
-            // Scanner scan = new Scanner(new File("testfile"));
-            bnum = scan.nextLine();
-            row1 = scan.nextLine();
-            row2 = scan.nextLine();
-            row3 = scan.nextLine();
-            tmatrix = row1 + row2 + row3;
-            tmatrix = tmatrix.trim();
-            String[] tvalues = tmatrix.split("\\s+");
-
-            System.out.println("bnum = " + bnum);
-            System.out.println("cenNum = " + cenNums.get(bnum));
-            System.out.println("det = " + test.getDeterminant(tvalues));
-            System.out.println(test.getDeterminant(tvalues) / cenNums.get(bnum));
-
-            if (test.getDeterminant(tvalues) / cenNums.get(bnum) != 1) {
-                System.out.println("yey");
-            }
-
-
-        } catch (FileNotFoundException e) {}
-
-
-        try {
-            Scanner scan = new Scanner(new File("normalB_17"));
-            // Scanner scan = new Scanner(new File("testfile"));
-            bnum = scan.nextLine();
-            row1 = scan.nextLine();
-            row2 = scan.nextLine();
-            row3 = scan.nextLine();
-            tmatrix = row1 + row2 + row3;
-            tmatrix = tmatrix.trim();
-            String[] tvalues = tmatrix.split("\\s+");
-
-            System.out.println("bnum = " + bnum);
-            System.out.println("cenNum = " + cenNums.get(bnum));
-            System.out.println("det = " + test.getDeterminant(tvalues));
-            System.out.println(test.getDeterminant(tvalues) / cenNums.get(bnum));
-
-            if (test.getDeterminant(tvalues) / cenNums.get(bnum) != 1) {
-                System.out.println("yey");
-            }
-
-
-        } catch (FileNotFoundException e) {}
-
-
-        if (this.getDeterminant == this.getDeterminant) {
-        }
-
-
-
-
-
-
-
-
-
-
+        double dub = 5;
+        int integer = 7;
+        System.out.println(dub/integer);
 
     }
 
 
-
-
 }
+

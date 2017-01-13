@@ -33,12 +33,12 @@ public class FindSymGroups {
     public FindSymGroups() {
         this.sgroups = new ArrayList<String>();
         try {
-            Scanner scan1 = new Scanner(new File("Sgroups.dat"));
+            Scanner scan1 = new Scanner(new File("Sgroups_for_identify.dat"));
             while (scan1.hasNextLine()) {
                 this.sgroups.add(scan1.nextLine());
             }
         } catch (FileNotFoundException e) { }
-
+        //
         this.cenNums = loadCenNums();
     }
 
@@ -75,7 +75,7 @@ public class FindSymGroups {
         ArrayList<String> identity = new ArrayList<String>();
         identity.add("x,y,z");
         cosetList.add(identity);
-        
+
         String line = "";
         try {
             Scanner scan2 = new Scanner(new File(filename));
@@ -131,7 +131,7 @@ public class FindSymGroups {
         }
     }
 
-    
+
     public static double getDeterminant(String[] tvalues) {
         double[] a = new double[tvalues.length];
         for (int i=0; i<tvalues.length; i++) {
@@ -174,11 +174,12 @@ public class FindSymGroups {
                     tmatrix = tmatrix.trim();
                     String[] tvalues = tmatrix.split("\\s+");
 
+
                     // skip to next matrix if extra translational copies are contained
                     // ie. if the lattice of the conjugated coset space is coarser
-                    
-                    // if (findSymGroups.getDeterminant(tvalues) / cenNums.get(bnum) ...
-
+                    // if (Math.abs((findSymGroups.getDeterminant(tvalues) / cenNums.get(bnum)) - 1.0) >= 0.000001) {
+                    //     continue;
+                    // }
 
                     // access COSETS from the Bilbao server
                     final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cryst/cosets.html");
@@ -229,6 +230,7 @@ public class FindSymGroups {
                     // read coset file and create list of lists of cosets
                     ArrayList<ArrayList<String>> cosetList = findSymGroups.makeCosetList("cosets_file");
 
+
                     // get rid of all non-symmorphic elements
                     for (ArrayList<String> cosets : cosetList) {
 
@@ -241,7 +243,8 @@ public class FindSymGroups {
 
                             HtmlTextArea text = forms.get(0).getTextAreaByName("generators");
 
-                            text.setText("x,y,z\n"+it.next());
+                            String temp = it.next();
+                            text.setText("x,y,z\n" + temp);
 
                             HtmlSubmitInput submit = page3.getElementByName("list");
                             final HtmlPage page4 = submit.click();
@@ -254,8 +257,9 @@ public class FindSymGroups {
                                 it.remove();
                             }
                         }
-                
+
                     }
+
 
                     boolean notPossible = false;
 

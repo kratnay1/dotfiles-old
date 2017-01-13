@@ -8,9 +8,11 @@ gnum=$1
 
 # file to store normal B groups for the group
 normalB_file="normalB_${gnum}"
+# file to store non-normal B groups for the group
+nonnormalB_file="nonnormalB_${gnum}"
 
-# for each chiral B group
-for bnum in 4 19 76 78 144 145 169 170
+# for each B group
+for bnum in 4 7 9 19 29 33 76 78 144 145 169 170
 do
 
     # find indices of B in G down to [Gamma:T]
@@ -29,6 +31,7 @@ do
     for index in "${indices[@]}"
     do
 
+        #file to store transformation matrices
         tmatrix_file="g${gnum}_${bnum}_${index}_matrices"
 
         # write transformation matrices relating B to G to file
@@ -80,7 +83,7 @@ do
 
             # B is not normal in G
             else
-                :
+                echo -e "$bnum\n$matrix\n" >> $nonnormalB_file 
             fi
             
             #increment line counters for next matrix in file
@@ -91,6 +94,9 @@ do
         done
 
     done
+
+    echo "$gnum"
+    echo "$bnum"
 
 done
 

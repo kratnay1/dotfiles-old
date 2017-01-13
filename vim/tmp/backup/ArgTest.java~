@@ -146,7 +146,7 @@ public class ArgTest {
                     System.out.println(coset);
                 }
             }
-            
+
             ArrayList<String> combinations = argtest.getCombinations(cosetList);
 
             // for (String cosets: combinations) {

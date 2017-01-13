@@ -1,26 +1,159 @@
 import com.gargoylesoftware.htmlunit.*;
 import com.gargoylesoftware.htmlunit.html.*;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.PrintWriter;
+import java.io.FileOutputStream;
+import java.io.OutputStream;
+import java.io.BufferedReader;
+import java.io.PrintStream;
+import java.io.Reader;
+import java.io.InputStreamReader;
+import java.util.Collections;
+import java.util.List;
+import java.util.Arrays;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.HashSet;
+import java.util.Hashtable;
+import java.lang.Math;
+import org.apache.commons.math3.*;
+import org.apache.commons.math3.linear.*;
 
 public class TestClass {
+
+
+
+    public static void editCosetsFile(String cosets_file) throws Exception {
+        String[] cmdScript = new String[] {"/bin/bash", "edit", cosets_file};
+        Process p = Runtime.getRuntime().exec(cmdScript);
+        p.waitFor();
+    }
+
+
+    public static void getGcosets(String[] args) throws Exception  {
+        String[] inputs = new String[] {args[0], args[0], "1", "0", "0", "0", "0", "1", "0", "0", "0", "0", "1", "0", "G_cosets_file" + args[0]};
+        getLeftCosetsBS.getLC(inputs);
+        editCosetsFile("G_cosets_file");
+    }
+
+
+    public static void getBcosets(String bnum, String[] tv) throws Exception {
+        String[] inputs = new String[15];
+        inputs[0] = bnum;
+        inputs[1] = bnum;
+        for (int i = 2; i < 14; i++) {
+            inputs[i] = tv[i-2];
+        }
+        inputs[14] = "B_cosets_file";
+        getLeftCosetsBS.getLC(inputs);
+        editCosetsFile("B_cosets_file");
+    }
+
+
+    public static void getScosets(String snum, String[] tv) throws Exception {
+        String[] inputs = new String[15];
+        inputs[0] = snum;
+        inputs[1] = snum;
+        for (int i = 2; i < 14; i++) {
+            inputs[i] = tv[i-2];
+        }
+        inputs[14] = "S_cosets_file";
+        getLeftCosetsBS.getLC(inputs);
+        editCosetsFile("S_cosets_file");
+    }
+
+
+    public static boolean testBS() throws Exception {
+        String[] cmdScript = new String[] {"/usr/local/bin/python3", "testBS.py"};
+        Process p = Runtime.getRuntime().exec(cmdScript);
+        p.waitFor();
+        BufferedReader inStream = new BufferedReader(new InputStreamReader( p.getInputStream() ));  
+        String pyresult = inStream.readLine();
+        return pyresult.equals("1");
+    }
+
+
+    public static double parseString(String fraction) {
+        if (fraction.contains("/")) {
+            String[] frac = fraction.split("/");
+            return Double.parseDouble(frac[0]) / Double.parseDouble(frac[1]);
+        } else {
+            return Double.parseDouble(fraction);
+        }
+    }
+
+
+    public static String[] clean(final String[] v) {
+        List<String> list = new ArrayList<String>(Arrays.asList(v));
+        list.removeAll(Collections.singleton(null));
+        return list.toArray(new String[list.size()]);
+    }
+
+
     public static void main(String[] args) throws Exception {
 
         try (final WebClient webClient = new WebClient()) {
-            final HtmlPage page = webClient.getPage("http://www.cryst.ehu.es/cryst/cosets.html");
 
-            final HtmlInput sup = page.getElementByName("super");
-            final HtmlInput sub = page.getElementByName("sub");
+            int count;
+            String currLine;
+            String row1;
+            String row2;
+            String row3;
+            String tm;
+            String bnum;
+            String[] snums = new String[10];
+            String[] nums;
+            try {
+                Scanner scan = new Scanner(new File("normalB_S_" + args[0]));
+                Scanner scanNonNS = new Scanner(new File("inonnormalS_" + args[0]));
+                Scanner scanNS = new Scanner(new File("inormalS_" + args[0]));
+                PrintWriter writer = new PrintWriter(new FileOutputStream("inormalB_S_" + args[0], false)); 
+                while (scan.hasNextLine()) {
+                    bnum = scan.nextLine();
+                    Arrays.fill(snums, null);
+                    snums[0] = scan.nextLine();
+                    count = 1;
 
-            sup.setValueAttribute("84");
-            sub.setValueAttribute("1");
+                    do {
+                        currLine = scan.nextLine();
+                        row1 = currLine;
+                        currLine = currLine.trim();
+                        nums = currLine.split("\\s+");
 
-            HtmlSubmitInput show = page.getElementByName("show");
-    
-            final HtmlPage page2 = show.click();
-            //final DomNodeList<DomElement> pretag = page2.getElementsbyTagName("pre");
-            //System.out.println(pretag.get(0).toString());
+                        if (nums.length == 1) {
+                            snums[count] = currLine;
+                            count++;
+                        }
+                    } while (nums.length == 1);
 
-            //System.out.println(page2.asXml());
-            System.out.println(page2.getElementsByTagName("pre").get(1).getTextContent());
+                    row2 = scan.nextLine();
+                    row3 = scan.nextLine();
+                    tm = row1 + row2 + row3;
+
+                    scan.nextLine(); // blank line
+
+                    tm = tm.trim();
+                    String[] tv = tm.split("\\s+");
+
+                    String[] snumsClean = clean(snums);
+
+
+                }
+
+                writer.close();
+
+            } catch (FileNotFoundException e) {
+                System.out.println("file not found");
+            }
+
+
+
+
+
+
+
         }
     }
 }

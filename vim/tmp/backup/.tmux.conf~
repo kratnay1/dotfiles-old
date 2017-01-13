@@ -1,13 +1,15 @@
-set-option -g status-bg colour235 #base02
-set-option -g status-fg colour136 #yellow
+# set-option -g status-bg colour235 #base02
+set -g status-bg colour235
+# set-option -g status-fg colour136 #yellow
+set -g status-fg white
 # tmux display things in 256 colors
 set -g default-terminal "screen-256color"
 
 bind u source-file ~/.tmux.conf
 
 #set window split
-bind-key v split-window -h
-bind-key b split-window 
+bind-key C-v split-window -h
+bind-key C-b split-window 
 
 set -g set-titles on
 set -g set-titles-string "#S"
@@ -18,13 +20,16 @@ set -g mouse-select-pane on
 set -g mouse-select-window on
 
 set -g status-utf8 on
-set -g status-fg colour136
+# set -g status-fg colour136
+set -g status-fg colour137
 set -g status-interval 5
 set -g status-left-length 20
 set -g status-right-length 60
-set -g status-left "#[fg=Green]#(whoami)  "
+set -g status-left "#[fg=Green]#S  "
 set -g status-justify left
 set -g status-right '#[fg=colour4] %a %d %l:%M %p' 
+# set -g status-right '#[fg=green]#H#[fg=colour4] %a %d %l:%M %p' 
+# set -g status-right '#[fg=green]#H#[default] %m/%d/%y %I:%M #[fg=red]#(battery discharging)#[default]#(battery charging)'
 
 # quick controls
 bind C-x kill-pane
@@ -44,13 +49,14 @@ set -s escape-time 0
 
 # pane border
 set-option -g pane-border-fg colour240 #base02
-set-option -g pane-active-border-fg colour4 #base00
+set-option -g pane-active-border-fg colour240 #base00
 
-set-window-option -g window-status-format " #I: #W "
+set-window-option -g window-status-format " #I:#W "
 
-set-window-option -g window-status-current-format " #I: #W "
+set-window-option -g window-status-current-format " #I:#W "
 set-window-option -g window-status-current-fg green
-set-window-option -g window-status-current-bg black
+set-window-option -g window-status-current-bg colour237 
+# set-window-option -g window-status-current-bg colour241
 
 # Smart pane switching with awareness of vim splits
 is_vim='echo "#{pane_current_command}" | grep -iqE "(^|\/)g?(view|n?vim?)(diff)?$"'
@@ -85,3 +91,4 @@ bind-key l resize-pane -R 25
 
 
 
+set -g default-command "reattach-to-user-namespace -l /bin/bash"

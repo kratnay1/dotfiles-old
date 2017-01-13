@@ -37,7 +37,11 @@ public class getIndex {
 
             Hashtable<String, String> indices_p1_B = new Hashtable<String, String>();
             indices_p1_B.put("4", "2");
+            indices_p1_B.put("7", "2");
+            indices_p1_B.put("9", "2");
             indices_p1_B.put("19", "4");
+            indices_p1_B.put("29", "4");
+            indices_p1_B.put("33", "4");
             indices_p1_B.put("76", "4");
             indices_p1_B.put("78", "4");
             indices_p1_B.put("144", "3");
