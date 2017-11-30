@@ -3,7 +3,8 @@ alias rem='old=$(pwd)'
 alias ret='cd $old'
 alias h='history'
 alias c='cat'
-alias ls='ls -GFh'
+alias l='ls -Gh'
+alias ls='ls -Gh'
 alias hs='history | g'
 alias g='grep --color=auto'
 alias ..='cd ..'
@@ -20,14 +21,14 @@ alias doc='cd ~/Documents'
 alias desk='cd ~/Desktop'
 alias lab='cd ~/Desktop/Research/'
 alias jaipur='cd ~/Intermediate_Programming/Project/jaipur/'
-alias bashrc='vi ~/.bashrc'
+alias br='vi ~/.bashrc'
 alias ugrad='g++-mp-4.8'
 alias prog='ls *.java *.sh *.py'
 alias checkstyle='java -jar checkstyle.jar -c jhu_checks.xml'
 alias list='ls ${PATH//:/ } | g'
 alias autorec='cd /Users/Kushan/Library/Application Support/Microsoft/Office/Office 2011 AutoRecovery'
 alias n="history | tail -2 | head -1 | tr -s ' ' | cut -d' ' -f3- | awk '{print \"\"\$0}' >> notes"
-alias vimrc='vi ~/.vimrc'
+alias vr='vi ~/.vimrc'
 alias o='cd ~/'
 alias bio='cd ~/Desktop/Comp_Bio'
 alias mbl='cd ~/Desktop/MBL'
@@ -42,6 +43,7 @@ alias conf='vi ~/.tmux.conf'
 alias vi='vim'
 alias .vim='cd ~/.vim'
 alias dotfiles='cd ~/dotfiles'
+alias f='fg'
 alias p='cd ~/Space_Group_Decomp/'
 alias pf='cd ~/Protein_Fitting/'
 alias k='clear'
@@ -53,28 +55,50 @@ alias progress='cat nonSohncke_progress.txt'
 alias vrep='/Applications/V-REP/vrep.app/Contents/MacOS/vrep'
 alias med='cd ~/Desktop/Medhacks/'
 alias elip='cd ~/Documents/MATLAB/Research/V18_P1/'
+alias in='vi ~/.inputrc'
+alias lk='clear;ls'
+alias snip='cd ~/.vim/bundle/vim-snippets/UltiSnips/'
+alias res='cd ~/Desktop/Decomp_Results/'
+alias ml='cd ~/Desktop/Machine_Learning/'
+alias tls='tmux list-sessions'
+alias rev='cd ~/REVO-ASK/'
+alias mat='cd ~/Documents/MATLAB'
+alias wrup='vi ~/Space_Group_Decomp/sgd.tex'
+alias e='exit'
+alias colors='cd ~/.vim/colors/'
+alias wrg='vi ~/Space_Group_Decomp/ggrp.dat'
+alias wrb='vi ~/Space_Group_Decomp/bgrp.dat'
+alias wrs='vi ~/Space_Group_Decomp/sgrp.dat'
+alias edg='vi ~/Space_Group_Decomp/gggrp.dat'
+alias edb='vi ~/Space_Group_Decomp/gbgrp.dat'
+alias eds='vi ~/Space_Group_Decomp/gsgrp.dat'
+alias rmg='rm ~/Space_Group_Decomp/gggrp.dat'
+alias rmb='rm ~/Space_Group_Decomp/gbgrp.dat'
+alias rms='rm ~/Space_Group_Decomp/gsgrp.dat'
+
 
 # vi mode in command line
 set -o vi
-set keymap vi-insert
 
-
+#####################################################################
 # functions
 cpu () {
     top -l1 2>/dev/null | g 'CPU usage:' | sed 's/^.*CPU/CPU/'
 }
 
+tns() { tmux new-session -s $1; }
 
-lt () {
+
+lt() {
     ls | tail -n 15;
 }
 
-cdl () {
+cl() {
     cd $1
     ls
 }
 
-function mk() {
+function mcd() {
     mkdir -p "$1" && cd "$1";
 }
 
@@ -97,29 +121,58 @@ function ip() {
     ifconfig | g "inet " | g -v 127.0.0.1 | cut -d\  -f2
 }   
 
+function wrgrps() {
+    vi ggrp.dat bgrp.dat sgrp.dat
+}
 
 
-# source /etc/profile
+function rmgrps() {
+    rm gggrp.dat
+    rm gbgrp.dat
+    rm gsgrp.dat
+}
 
+function edgrps() {
+    ./edit.sh ggrp.dat
+    ./edit.sh bgrp.dat
+    ./edit.sh sgrp.dat
+}
 
+function catgrps() {
+    cat gggrp.dat
+    echo ''
+    cat gbgrp.dat
+    echo ''
+    cat gsgrp.dat
+}
+
+function mg() {
+    python newtest.py
+}
+
+function sg() {
+    python classifyTest.py
+}
+
+#####################################################################
+
+# prevent c-q, c-s from sending stty start signal
+stty start undef
+
+# prompt
 fill=""
 reset_style='\[\033[00m\]'
 status_style=$reset_style'\[\033[0;90m\]' # gray color; use 0;37m for lighter color
 prompt_style=$reset_style
 command_style=$reset_style'\[\033[1;29m\]' # bold black
 # Prompt variable:
-
-
-PS1="$status_style"'\n'"$prompt_style"'${debian_chroot:+($debian_chroot)}\u:\w$'"$command_style "
-
+PS1='\n''${debian_chroot:+($debian_chroot)}\[\033[01;30m\]\u:\[\033[01;35m\]\w\[\033[00m\] '
 # PS1="$status_style"'$fill \t\n'"$prompt_style"'${debian_chroot:+($debian_chroot)}\u:\w\$'"$command_style "
-
 # Reset color for command output
 # (this one is invoked every time before a command is executed):
 trap 'echo -ne "\033[00m"' DEBUG
 
 function prompt_command {
-
 # create a $fill of all screen width minus the time string and a space:
 let fillsize=${COLUMNS}-9
 fill=""
@@ -138,7 +191,6 @@ case "$TERM" in
     *)
         ;;
 esac
-
 }
 PROMPT_COMMAND=prompt_command
 

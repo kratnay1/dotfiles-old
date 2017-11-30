@@ -42,10 +42,11 @@ Plugin 'mtth/scratch.vim'
 Plugin 'junegunn/goyo.vim'
 " Plugin 'rstacruz/vim-closer'
 Plugin 'SirVer/ultisnips'
-" Plugin 'honza/vim-snippets'
+Plugin 'honza/vim-snippets'
 Plugin 'ervandew/supertab'
 Plugin 'gorkunov/smartpairs.vim'
 Plugin 'vim-scripts/TeX-PDF'
+Plugin 'vim-scripts/LustyJuggler'
 Plugin 'tacahiroy/ctrlp-funky'
 
 
@@ -155,8 +156,10 @@ set lazyredraw
 set wrap linebreak nolist
 
 
-nnoremap J 8<C-e>
-nnoremap K 8<C-y>
+nnoremap J 5<C-e>
+nnoremap K 5<C-y>
+nnoremap <C-D> 8<C-e>8gj
+nnoremap <C-i> 8<C-y>8gk
 " nnoremap J 15gj
 " nnoremap K 15gk
 " nnoremap <C-f> 3<C-y>
@@ -171,7 +174,8 @@ nnoremap ; :
 map <Space> <leader>
 let hlstate=0
 nmap <silent> <leader><space> :nohlsearch<CR>
-nmap <silent> <leader>9 :set hlsearch<CR>
+nmap <silent> <leader>8 :set hlsearch<CR>
+nmap <silent> <C-w> :b#<CR>
 vnoremap <silent> y y`]
 nnoremap gp '[v']
 " vnoremap <silent> p p`];
@@ -190,12 +194,11 @@ nnoremap <leader>2 :b2<CR>
 nnoremap <leader>3 :b3<CR>
 nnoremap <leader>4 :b4<CR>
 nnoremap <leader>5 :b5<CR>
-nnoremap <leader>e :b#<CR>
-nnoremap <C-e> :e 
+nnoremap <C-e> <c-o>
+nnoremap <C-f> <c-i>
 nnoremap <leader>no :e ~/Tests/.pl/notes.txt<CR>
 " nnoremap <leader>w <C-w>w<CR>
 map <Leader>f mmgg=G`m
-imap <C-w> <C-o><C-w>
 nnoremap C cc
 nnoremap <C-h> <C-w>h<CR>
 nnoremap <C-j> <C-w>j<CR>
@@ -211,7 +214,6 @@ nmap <leader>q :wq<cr>
 imap <c-u> <Esc>u
 nmap <leader>' ysi)"
 nmap cc cL
-nnoremap <c-i> <c-u>
 nnoremap n nzz
 nnoremap N Nzz
 nnoremap G Gzz
@@ -220,11 +222,17 @@ nnoremap { {zz
 "quick pairs
 imap ;' ''<ESC>i
 imap ;; ""<ESC>i
-imap ;( ()<ESC>i
-imap ;[ []<ESC>i
+imap ;b ()<ESC>i
+imap ;B []<ESC>i
+imap ;fn <c-r>=expand('%:t:r')<cr>
 "visual mode
 vmap aa VGo1G
 " nnoremap D <c-i>
+" nnoremap <tab> :bn<CR>
+" nnoremap <S-tab> :bp<CR>
+" nnoremap <c-i> <c-u>
+
+
 
 set gdefault
 set breakindent
@@ -242,6 +250,7 @@ colorscheme tomorrow-night
 execute pathogen#infect()
 
 imap ;so System.out.println();<left><left>
+imap ;wo writer.out.println();<left><left>
 
 nmap ? gcc
 vmap ? gc
@@ -321,8 +330,8 @@ let g:NERDTreeQuitOnOpen=0
 
 " map fuzzyfinder (CtrlP) plugin
 " nmap <silent> <leader>t :CtrlP<cr>
-nmap <silent> <leader>t :CtrlPBuffer<cr>
-let g:ctrlp_map='<c-t>'
+nmap <silent> <C-q> :CtrlPBuffer<cr>
+let g:ctrlp_map='<leader>t'
 let g:ctrlp_dotfiles=1
 let g:ctrlp_working_path_mode = 'ra'
 
@@ -369,17 +378,21 @@ let g:VimuxOrientation = "h"
 " edit and source .vimrc
 nmap <leader>r :edit $MYVIMRC<cr>
 nmap <leader>R :so $MYVIMRC<cr><leader><space>
+nmap <leader>b :edit ~/.bashrc<cr>
 
 " Move visual block
 vnoremap J :m '>+1<CR>gv=gv
 vnoremap K :m '<-2<CR>gv=gv
 
-nmap <Leader>u :UltiSnipsEdit<cr>
-" let g:UltiSnipsExpandTrigger="<tab>"
-" let g:UltiSnipsJumpForwardTrigger="<cr>"
-" let g:UltiSnipsJumpBackwardTrigger="<s-cr>"
+" nmap <leader><space> :LustyJuggler<cr>
 
-autocmd! FileType c,cpp,java,php call CSyntaxAfter()
+
+let g:SuperTabDefaultCompletionType = '<C-n>'
+nmap <Leader>u :UltiSnipsEdit<cr>
+let g:UltiSnipsExpandTrigger="<tab>"
+let g:UltiSnipsJumpForwardTrigger="<tab>"
+let g:UltiSnipsJumpBackwardTrigger="<s-tab>"
+
 
 
 set noesckeys
@@ -388,7 +401,7 @@ set ttimeoutlen=1
 
 set timeoutlen=500
 
-hi MatchParen cterm=none ctermbg=black ctermfg=yellow
+hi MatchParen cterm=none ctermbg=235 ctermfg=yellow
 
 function! RenameFile()
     let old_name = expand('%')
@@ -413,9 +426,12 @@ set wildmode=list:full
 highlight LineNr       ctermbg=236 ctermfg=243
 " highlight CursorLineNr ctermbg=236 ctermfg=240
 " highlight CursorLine   ctermbg=236
+highlight CursorLine cterm=bold
 highlight VertSplit ctermfg=238 ctermbg=238
 highlight StatusLineNC ctermfg=238
 highlight StatusLine   ctermfg=238
+highlight StatusLine   ctermbg=137
+" highlight StatusLine   ctermfg=7
 highlight IncSearch    ctermbg=3   ctermfg=1
 " highlight Search       ctermbg=1   ctermfg=3
 " highlight Visual       ctermbg=3   ctermfg=0
@@ -437,10 +453,10 @@ vnoremap . :norm.<cr>
 " LaTeX macros for compiling and viewing
 augroup latex_macros " {
     autocmd!
-    autocmd FileType tex :nnoremap <leader>c :w<CR>:!rubber --pdf --warn all %<CR>
+    autocmd FileType tex :set showbreak=\ \ \ 
+    autocmd FileType tex :nnoremap <leader>c :w<CR>:!rubber --pdf --warn all %<CR><CR>
     autocmd FileType tex :nnoremap <leader>v :!mupdf-gl %:r.pdf &<CR><CR>
 augroup END " }
-
 
 if exists('$TMUX')
   let &t_SI = "\<Esc>Ptmux;\<Esc>\<Esc>]50;CursorShape=1\x7\<Esc>\\"
@@ -449,11 +465,10 @@ else
   let &t_SI = "\<Esc>]50;CursorShape=1\x7"
   let &t_EI = "\<Esc>]50;CursorShape=0\x7"
 endif
-
  
 " Store relative line number jumps in the jumplist if they exceed a threshold.
-nnoremap <expr> k (v:count > 5 ? "m'" . v:count : '') . 'k'
-nnoremap <expr> j (v:count > 5 ? "m'" . v:count : '') . 'j'
+nnoremap <expr> k (v:count > 8 ? "m'" . v:count : '') . 'gk'
+nnoremap <expr> j (v:count > 8 ? "m'" . v:count : '') . 'gj'
 
 
 
