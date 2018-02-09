@@ -525,6 +525,7 @@ if has("gui_running") || &t_Co == 88 || &t_Co == 256
 endif
 
 set background=dark
+set fillchars+=vert:\ 
 hi! CursorLineNr ctermfg = 242
 hi! LineNr ctermfg = 242
 hi! error ctermbg=darkred ctermfg=235

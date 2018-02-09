@@ -7,16 +7,16 @@ alias l='ls -Gh'
 alias ls='ls -Gh'
 alias hs='history | g'
 alias g='grep --color=auto'
+alias a='cd -'
 alias ..='cd ..'
 alias ...='cd ../../'
 alias ....='cd ../../../'
 alias .....='cd ../../../../'
-alias ......='cd ../../../../..'
 alias l.='ls -d .*'
 alias ds='du -ks *|sort -n'
 alias al='alias'
 alias sulast='sudo $(history -p !-1)'
-alias dl='cd ~/Downloads'
+alias dow='cd ~/Downloads'
 alias doc='cd ~/Documents'
 alias desk='cd ~/Desktop'
 alias lab='cd ~/Desktop/Research/'
@@ -30,41 +30,38 @@ alias autorec='cd /Users/Kushan/Library/Application Support/Microsoft/Office/Off
 alias n="history | tail -2 | head -1 | tr -s ' ' | cut -d' ' -f3- | awk '{print \"\"\$0}' >> notes"
 alias vr='vi ~/.vimrc'
 alias o='cd ~/'
-alias bio='cd ~/Desktop/Comp_Bio'
-alias mbl='cd ~/Desktop/MBL'
-alias prof='cd ~/Desktop/Prof_Comm'
-alias sem='cd ~/Desktop/Virology'
 alias edit='for i in $(\ls -d [1-9]*); do ./edit $i; done'
 alias space='cd ~/Documents/MATLAB/Research/SpaceGroupDecomposition'
 alias sshbio='ssh compbio2@kirin.kit.jhu.edu'
 alias sftpbio='sftp compbio2@kirin.kit.jhu.edu'
 alias vmd='/Applications/VMD\ 1.9.1.app/Contents/MacOS/startup.command'
 alias conf='vi ~/.tmux.conf'
+alias i='ipython --profile=sgd'
 alias vi='vim'
+alias e='vim'
 alias .vim='cd ~/.vim'
+alias .i='cd ~/.ipython/'
 alias dotfiles='cd ~/dotfiles'
 alias f='fg'
 alias p='cd ~/Space_Group_Decomp/'
 alias pf='cd ~/Protein_Fitting/'
 alias k='clear'
+alias q='exit'
 alias r='exec $SHELL -l'
 alias ta='tmux attach'
 alias t='cd ~/Tests'
-alias jo='vi ~/journal.txt'
+alias jo='vi ~/Journal/journal.txt'
 alias progress='cat nonSohncke_progress.txt'
 alias vrep='/Applications/V-REP/vrep.app/Contents/MacOS/vrep'
-alias med='cd ~/Desktop/Medhacks/'
 alias elip='cd ~/Documents/MATLAB/Research/V18_P1/'
 alias in='vi ~/.inputrc'
-alias lk='clear;ls'
+alias lk='k;ls'
 alias snip='cd ~/.vim/bundle/vim-snippets/UltiSnips/'
 alias res='cd ~/Desktop/Decomp_Results/'
 alias ml='cd ~/Desktop/Machine_Learning/'
 alias tls='tmux list-sessions'
-alias rev='cd ~/REVO-ASK/'
 alias mat='cd ~/Documents/MATLAB'
 alias wrup='vi ~/Space_Group_Decomp/sgd.tex'
-alias e='exit'
 alias colors='cd ~/.vim/colors/'
 alias wrg='vi ~/Space_Group_Decomp/ggrp.dat'
 alias wrb='vi ~/Space_Group_Decomp/bgrp.dat'
@@ -75,6 +72,8 @@ alias eds='vi ~/Space_Group_Decomp/gsgrp.dat'
 alias rmg='rm ~/Space_Group_Decomp/gggrp.dat'
 alias rmb='rm ~/Space_Group_Decomp/gbgrp.dat'
 alias rms='rm ~/Space_Group_Decomp/gsgrp.dat'
+alias hq='python hq.py'
+
 
 
 # vi mode in command line
@@ -93,7 +92,7 @@ lt() {
     ls | tail -n 15;
 }
 
-cl() {
+dl() {
     cd $1
     ls
 }
@@ -152,6 +151,36 @@ function mg() {
 
 function sg() {
     python classifyTest.py
+}
+
+function pruneB() {
+    cp normalB_${1} normalB_${1}_table
+}
+
+
+function decomp() {
+    python Main.py $1 > decomp_${1}
+}
+
+function tab() {
+    rm table.tex
+    ./writeTable.sh
+}
+
+function s() {
+    echo $@ > question.txt
+}
+
+function c1() {
+    echo $@ > choice1.txt
+}
+
+function c2() {
+    echo $@ > choice2.txt
+}
+
+function c3() {
+    echo $@ > choice3.txt
 }
 
 #####################################################################
@@ -219,7 +248,7 @@ export PATH="/opt/local/bin:/opt/local/sbin:$PATH"
 
 # Setting PATH for Python 3.4
 # The orginal version is saved in .bash_profile.pysave
-PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
+# PATH="/Library/Frameworks/Python.framework/Versions/3.4/bin:${PATH}"
 export PATH
 
 
@@ -229,7 +258,8 @@ export PATH
 export PATH=$PATH:$PYROSETTA
 
 export PYROSETTA_DATABASE=$PYROSETTA/rosetta_database
-export PYTHONPATH=/Library/Python/2.7/site-packages:$PYTHONPATH
+# export PYTHONPATH=/Library/Python/2.7/site-packages:$PYTHONPATH
+unset PYTHONPATH
 
 #export PATH=/Users/Kushan/Downloads/phantomjs-1.9.8-macosx/bin:$PATH
 export PATH=/Users/Kushan/Downloads:$PATH

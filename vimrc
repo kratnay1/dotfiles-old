@@ -187,6 +187,7 @@ nnoremap <leader>p mz"+p'zX
 nnoremap <c-o> o<Esc>k
 nnoremap go O<Esc>j
 nnoremap g{ {dap}p{
+nnoremap gp `[v`]
 " nnoremap gl ddp
 " nnoremap gL ddkP
 nnoremap <leader>1 :b1<CR>
@@ -412,7 +413,7 @@ function! RenameFile()
         redraw!
     endif
 endfunction
-" map <Leader>n :call RenameFile()<cr>
+map <Leader>n :call RenameFile()<cr>
 
 " Better? completion on command line
 set wildmenu
@@ -421,7 +422,6 @@ set wildmode=list:full
 
 
 " highlight clear SignColumn
-" highlight VertSplit    ctermbg=236
 " highlight ColorColumn  ctermbg=237
 highlight LineNr       ctermbg=236 ctermfg=243
 " highlight CursorLineNr ctermbg=236 ctermfg=240
