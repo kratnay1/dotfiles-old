@@ -1,0 +1,1265 @@
+\documentclass[12pt]{amsart}
+\usepackage{amsmath, amsthm, amscd, amsfonts,amssymb, graphicx}
+\usepackage{accents}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\usepackage{longtable}
+\usepackage[vlined, linesnumbered]{algorithm2e}
+\newcommand{\circledstar}{\text{\small\textcircled{$\star$}}}
+\widowpenalty=1000
+\clubpenalty=1000
+
+
+\Large
+% \textheight=23cm
+\textwidth=16.75cm
+\oddsidemargin=0.1cm
+\evensidemargin=0.1cm
+\topmargin=-1cm
+
+\newlength{\dhatheight}
+\newcommand{\doublehat}[1]{%
+    \settoheight{\dhatheight}{\ensuremath{\hat{#1}}}%
+    \addtolength{\dhatheight}{-0.35ex}%
+    \hat{\vphantom{\rule{1pt}{\dhatheight}}%
+\smash{\hat{#1}}}}
+\newcommand{\yy}{{\bf y}}
+\newcommand{\xx}{{\bf x}}
+\newcommand{\qq}{{\bf q}}
+\newcommand{\OO}{\mathbb{O}}
+\newcommand{\II}{\mathbb{I}}
+\newcommand{\IR}{\mathbb{R}}
+\newcommand{\IC}{\mathbb{C}}
+\newcommand{\IZ}{\mathbb{Z}}
+\newcommand{\half}{\frac{1}{2}}
+\newcommand{\halff}{1/2}
+\newcommand{\bea}{\begin{eqnarray*}}
+\newcommand{\eea}{\end{eqnarray*}}
+\newcommand{\bfmu}{\mbox{\boldmath $\mu$ \unboldmath} \hskip -0.05 true in}
+\newcommand{\bfphi}{\mbox{\boldmath $\phi$ \unboldmath} \hskip -0.05 true in}
+\newcommand{\beq}{\begin{equation}}
+\newcommand{\eeq}{\end{equation}}
+\newcommand{\bfell}{\mbox{\boldmath $\ell$ \unboldmath} \hskip -0.05 true in}
+\newcommand{\bfomega}{\mbox{\boldmath $\omega$ \unboldmath} \hskip -0.05 true in}
+\newcommand{\om}{\omega}
+\newcommand{\Om}{\Omega}
+\newcommand{\bom}{\bfomega}
+\newcommand{\III}{\rm III}
+\newcommand{\D}{\mathrm{d}}
+\def\tab{ {\hskip 0.15 true in} }
+\def\vtab{ {\vskip 0.1 true in} }
+\def\htab{ {\hskip 0.1 true in} }
+\def\ntab{ {\hskip -0.1 true in} }
+\def\vtabb{ {\vskip 0.0 true in} }
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\theoremstyle{definition}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{prop}[theorem]{Proposition}
+\newtheorem{example}[theorem]{Example}
+\newtheorem{xca}[theorem]{Exercise}
+\newtheorem{proposition}[theorem]{Proposition}
+\newtheorem{corollary}[theorem]{Corollary}
+
+\theoremstyle{remark}
+\newtheorem{remark}[theorem]{Remark}
+
+\numberwithin{equation}{section}
+
+
+
+\begin{document}
+
+\title[]{Space Group Decomposition}
+
+\maketitle
+
+\section{{\bf Finding all normal and non-normal subgroups of $\bf \Gamma$}}
+For each space group, $\Gamma$, we consider every candidate $\Gamma_{B}$ to see if it is contained as a subgroup, using SUBGROUPGRAPH on Bilbao.  For each $\Gamma_{B}$, we attempt each possible index in $\Gamma$ as input, starting at 2 and limiting our search to $[\Gamma :\mathbf{T}]$, where $\mathbf{T}$ is the finest lattice in $\Gamma$. The smallest index we consider for $[\Gamma :\Gamma_{B}]$ is therefore $[\Gamma :\mathbf{T}] / [\Gamma_{B} :P1]$.  $P1$ is always the finest lattice in $\Gamma_{B}$, but in general, 
+\[
+    [\Gamma :P1] = C [\Gamma :\mathbf{T}],
+\]
+where $C$ is the centering number for the space group type ($C=1$ for $P$ groups).  For every $\Gamma_{B}$, index, and transformation matrix, $\alpha$, produced by the server, the ITA number and matrix are stored in two separate files depending on whether or not $\Gamma_{B}$ is normal in $\Gamma$.  
+
+Normality is assessed by comparing left and right cosets mod $\mathbb{Z}^3$.  The group-subgroup pair and given $\alpha$ is given as input to the COSETS routine and the output for left and right coset decomposition is stored.  The matrices are extracted from the transformed coordinates with the translation part taken mod 1. The fundamental domains formed by the left and right coset representatives are equal if they are both subsets of each other.  (Two matrices are equal if the Frobenius norm of their difference is sufficiently small.)
+
+This same process for finding normal and non-normal Bieberbach subgroups is repeated for the symmorphic space groups.  The end result for each space group is the enumeration of all possible subgroups of the forms
+\[
+    \Gamma_{B} < \alpha^{-1} \Gamma \alpha, \ \ \Gamma_{S} < \beta^{-1} \Gamma \beta,
+\]
+where it is known for each relation whether $\Gamma_{B}$ or $\Gamma_{S}$ is normal in the conjugated $\Gamma$.
+
+\section{\bf Decomposing $\bf F_{\Gamma/P1}$}
+Let $H^{X}:=X^{-1}H X $. The main goal is to write a decomposition of the form
+\[
+    F_{\frac{\Gamma^{Z}}{P1}} = F_{\frac{\Gamma_{B}^{X}}{P1}} F_{\frac{\Gamma_{S}^{Y}}{P1}} mod \ \mathbb{Z}^3
+\]
+where each version of P1 is a common lattice.
+
+In other words, our goal is to find all the combinations of matrices $X$, $Y$, and $Z$ for which this holds.  In the case where $\det(\alpha) = \det(\beta) = 1$, then it is possible to use $X = \alpha^{-1}$, $Y = \beta^{-1}$, and $Z = \mathbb{I}$.  When $\det(\alpha) > 1$, it becomes necessecary to expand the lattice of $\Gamma$ by using $Z = \alpha$ and $X = \mathbb{I}$.  The general algorithm for finding all semi-decompositions where $\Gamma_{B} \lhd \Gamma^{Z}$ or $\Gamma_S \lhd \Gamma^Z$ is as follows.
+
+\newpage
+\subsection{\bf Outline of algorithm} \hfill \break
+
+\begin{algorithm}[H]
+    \For{each $\Gamma_{B}$ and $\alpha$}{
+        Set $Z = \alpha$ and $X = \mathbb{I}$\;
+        Using COSETS, retrieve $F_\frac{\Gamma^Z}{P1}$, $F_\frac{\Gamma_{B}^X}{P1}$\;
+        Pick out the $S$ group by identifying pure rotations and pure translations in $F_\frac{\Gamma^Z}{P1}$\;
+        Determine the group $\Gamma_{S}$ using IDENTIFY GROUP and store the provided transformation $A$\;
+        \If{$\Gamma_S$ is a $P$ group} {
+            Set $Y=A$\;
+        } \Else {
+            Determine centering matrix $C$ using SUBGROUPGRAPH where $G=\Gamma_S$, $H=P1$, and $[G:H]$ is the centering number for the non-primitive lattice of $\Gamma_S$\;
+            Set $Y=C A$\;
+        }
+        Using COSETS, retrieve $F_\frac{\Gamma_{S}^Y}{P1}$\;
+        \If{$|F_{\frac{\Gamma^{Z}}{P1}}| = |F_{\frac{\Gamma_{B}^{X}}{P1}}| |F_{\frac{\Gamma_{S}^{Y}}{P1}}|$}{
+            Determine if $F_{\frac{\Gamma^{Z}}{P1}} = F_{\frac{\Gamma_{B}^{X}}{P1}} F_{\frac{\Gamma_{S}^{Y}}{P1}} mod \ \mathbb{Z}^3$\;
+        }
+    }
+\end{algorithm}
+
+\begin{algorithm}[H]
+    \For{each $\Gamma_{S}$ and $\beta$}{
+        \If{$\Gamma_S$ is a $P$ group}{
+            Set $Z = \beta$ and $Y = \mathbb{I}$\;
+        } \Else {
+            Determine centering matrix $C$ using SUBGROUPGRAPH where $G=\Gamma_S$, $H=P1$, and $[G:H]$ is the centering number for the non-primitive lattice of $\Gamma_S$\;
+            Set $Z=\beta C$ and $Y=C$\;
+        }
+    Using COSETS, retrieve $F_\frac{\Gamma^Z}{P1}$, $F_\frac{\Gamma_{S}^Y}{P1}$\;
+        Identify all $B$ subgroups of $F_\frac{\Gamma^Z}{P1}$\;
+        \For{each $B$ subgroup}{
+            Determine the group $\Gamma_{B}$ and the matrix $X^{-1}$ using IDENTIFY GROUP\;
+            Using COSETS, retrieve $F_\frac{\Gamma_{B}^X}{P1}$\;
+            \If{$|F_{\frac{\Gamma^{Z}}{P1}}| = |F_{\frac{\Gamma_{B}^{X}}{P1}}| |F_{\frac{\Gamma_{S}^{Y}}{P1}}|$}{
+                Determine if $F_{\frac{\Gamma^{Z}}{P1}} = F_{\frac{\Gamma_{B}^{X}}{P1}} F_{\frac{\Gamma_{S}^{Y}}{P1}} mod \ \mathbb{Z}^3$\;
+            }
+        }
+    }
+\end{algorithm}
+
+\newpage
+
+\section{Semi-Decomposition Table}
+\\ \\
+\resizebox{\linewidth}{!}{%
+\begin{tabular}{c*{7}{c}c}
+      \text{Intl.} & $\Gamma$ & $\Gamma_{B}$ & $\Gamma_{S}$ & { $|\Xi|$} & $\mathbb{B}$,$\mathbb{S} \triangleleft\, \Sigma\backslash\Gamma$? & $\Sigma=T$\,? \\
+      \hline
+$17$    & $P 2 2 2_1$     &  $P 2_1 $ & $P 2$ & 1 & Y,Y & Y  \\
+$18$    & $P 2_1 2_1 2$       & $P 2_1 \,\vert\, P 2_1 2_1 2_1$   &  $P 2$  & 1 & Y,Y & Y \\
+$20$    &  $C 2 2 2_1$    & $P 2_1\,\vert\, P 2_1 2_1 2_1$   & $C 2\,\vert\, P2$ & 1 & Y,Y & Y \\
+$24$    & $I 2_1 2_1 2_1$      & $P 2_1 2_1 2_1$   &  $P 2$  & 1 & Y,N & N \\
+$77$    & $P 4_2$      & $P 4_1, { P 4_3}$   & ${ P 2} $ & 1 & Y,N & N \\
+$80$    & $I 4_1$              & $P 4_1, { P 4_3}$   &  $P 2$ & 1 & Y,N & N \\
+{ $90$}    &  $P 4 2_1 2$  & $P2_1$  &  $C222,P4$ & 1 & N,Y & Y \\
+% &   & $P2_12_12_1$  &  $C222$  & N,Y & N \\
+%  &   & $P2_1$  &  $C222$  & 2 & Y,Y & N \\
+$91$    &  $P 4_1 2 2$  & $P4_1$  &  $P 2$ & 1 & Y,N & Y \\
+$92$    & $P 4_1 2_1 2$   & $P 2_1 2_1 2_1, P4_1$   & $C 2$ & 1 & Y,N  & Y \\
+$93$   & $P 4_2 2 2$   &  $P4_1, { P 4_3}$  & ${ P222}$  & 1 & Y,N  & N \\
+{ $94$}   & $P 4_2 2_1 2$   &  $P 2_1 2_1 2_1,P4_1, P 4_3$  &
+$C222$ & 1 & Y,N  & N \\
+$95 $   &  $P 4_3 2 2$   & $P 4_3$  & $P 2$ & 1 & Y,N  & Y \\
+$96$    & $P 4_3 2_1 2$  &  $P 2_1 2_1 2_1,P4_3$   & $C 2$ & 1 & Y,N  & Y \\
+{ $98$}   & $I 4_1 22$   &  $P 2_1 2_1 2_1,P4_1, P 4_3$  & $C222$  & 1  & Y,N & N \\
+$151$  & $P 3_1 1 2$    & $P 3_1$   &  $C 2$ & 1 & Y,Y & Y \\
+$152$   & $P 3_1 2 1$    & $P 3_1$   & $C 2$ & 1 & Y,Y  & Y \\
+$153$   & $P 3_2 1 2$       & $P 3_2$ & $C 2$ & 1 & Y,N  & Y \\
+$154$   &  $P 3_2 2 1$      & $P 3_2$   & $C 2$ & 1 & Y,N & Y \\
+$171$   & $P 6_2$   &   $P3_2\,\vert\, P6_1$  &  $P 2$  & 1 & Y,Y & Y \\
+$172$   & $P 6_4$   & $P 3_1\,\vert\, P6_5$  &  $P 2$ & 1 & Y,Y & Y \\
+$173$   & $P 6_3$         & $P 2_1\,\vert\, P6_1,P6_5$   &  $P 3$ & 1 & Y,Y & Y \\
+$178$   & $P 6_1 2 2 $      & $P 6_1$  & $C 2$ & 1 & Y,N & Y \\
+$179$   & $ P6_5 2 2 $      & $P 6_5$   & $C 2$ & 1 & Y,N & Y \\
+$180 $  & $P 6_2 2 2$          & $P 3_2\,\vert\, P6_1$   & $C 222$ & 1 & Y,N & Y \\
+$181$   & $P 6_4 2 2$      & $P 3_1\,\vert\, P6_5$  & $C 222$ & 1 & Y,N & Y \\
+$182$   & $P 6_3 2 2$     & $P 2_1\,\vert\, P6_1,P6_5$  & $P 3 2 1, { P312} $ & 1 & Y,Y$\,\vert\,$N & Y \\
+$198$   & $P 2_1 3$     & $P 2_1 2_1 2_1$  & $R 3$  & 1 & Y,N & Y \\
+$199 $  & $I 2_1 3$      & $P 2_1 2_1 2_1$ &  $R 3 $ & 1 & Y,N & N \\
+% $208$ & $P 4_2 3 2 $ & ${ P 2_12_12_1} $ & $P 2 3 $ & 2 & { N/A,N/A}  & { N} \\
+$208$ & $P 4_2 3 2 $ & ${P 2_1} $ & $P 2 3 $ & 4 & { N/A,N/A}  & { N} \\
+ %  &      &  { $P4_1,P4_3$}  & $F 2 3$  & 4 & { N,Y} %was Y before
+ %      & { N} \\
+$210$  & $F 4_1 3 2$       & { $P 2_12_12_1,P4_1,P4_3$}  & $F 2 3$ & 1 & N,Y  &  N \\
+%  &  &  ${P 2_1}$  & $F 2 3$  & 2 & { N}, % was N/A before   Y   & { N} \\
+$212 $  & $P4_332$      & $P 2_1 2_1 2_1$ &  $R 32 $ & 1 & Y,N & Y \\
+{ $213 $}  & $P4_132$      & $P 2_1 2_1 2_1$ &  $R 32 $ & 1 & Y,N & Y \\
+{ $214$}  & $I4_132$      & $P 2_1 2_1 2_1$ &  $R 32 $ & 2 & Y,{ N}
+% was N/A before
+& N \\
+\end{tabular}
+}
+\\ \\
+
+
+\section{New Semi-Decomposition Table}
+\\ \\
+% \resizebox{\linewidth}{!}{%
+\begin{longtable}{c*{7}{c}c}
+    \text{Intl.} & $\Gamma$ & $\Gamma_{B}$ & $\Gamma_{S}$ & $\mathbb{B} \triangleleft\, \Sigma\backslash\Gamma$? & $\mathbb{S} \triangleleft\, \Sigma\backslash\Gamma$? \\
+    \hline
+    $17$ & $P222_1$ & $P2_1$ & $P2$ & Y & Y \\
+    $18$ & $P2_{1}2_{1}2$ & $P2_1$ & $P2$ & Y & Y \\
+    $18$ & $P2_{1}2_{1}2$ & $P2_{1}2_{1}2_1$ & $P2$ & Y & Y \\
+    $20$ & $C222_1$ & $P2_1$ & $C2$ & Y & Y \\
+    $20$ & $C222_1$ & $P2_{1}2_{1}2_1$ & $P2$ & Y & Y \\
+    $24$ & $I2_{1}2_{1}2_1$ & $P2_{1}2_{1}2_1$ & $P2$ & Y & Y \\
+    $77$ & $P4_2$ & $P4_1$ & $P2$ & Y & Y \\
+    $77$ & $P4_2$ & $P4_3$ & $P2$ & Y & Y \\
+    $80$ & $I4_1$ & $P4_1$ & $P2$ & Y & Y \\
+    $80$ & $I4_1$ & $P4_3$ & $P2$ & Y & Y \\
+    $90$ & $P42_{1}2$ & $P2_1$ & $C222,P4$ & N & Y,Y \\
+    $91$ & $P4_{1}22$ & $P4_1$ & $P2,C2$ & Y & N,N \\
+    $92$ & $P4_{1}2_{1}2$ & $P2_{1}2_{1}2_1$ & $C2$ & Y & N \\
+    $92$ & $P4_{1}2_{1}2$ & $P4_1$ & $C2$ & Y & N \\
+    $93$ & $P4_{2}22$ & $P4_1$ & $P222,C222$ & Y & N,N \\
+    $93$ & $P4_{2}22$ & $P4_3$ & $P222,C222$ & Y & N,N \\
+    $94$ & $P4_{2}2_{1}2$ & $P2_{1}2_{1}2_1$ & $C222$ & Y & N \\
+    $94$ & $P4_{2}2_{1}2$ & $P4_1$ & $C222$ & Y & N \\
+    $94$ & $P4_{2}2_{1}2$ & $P4_3$ & $C222$ & Y & N \\
+    $95$ & $P4_{3}22$ & $P4_3$ & $P2,C2$ & Y & N,N \\
+    $96$ & $P4_{3}2_{1}2$ & $P2_{1}2_{1}2_1$ & $C2$ & Y & N \\
+    $96$ & $P4_{3}2_{1}2$ & $P4_3$ & $C2$ & Y & N \\
+    $98$ & $I4_{1}22$ & $P2_{1}2_{1}2_1$ & $C222$ & Y & N \\
+    $98$ & $I4_{1}22$ & $P4_1$ & $C222$ & Y & N \\
+    $98$ & $I4_{1}22$ & $P4_3$ & $C222$ & Y & N \\
+    $151$ & $P3_{1}12$ & $P3_1$ & $C2$ & Y & N \\
+    $152$ & $P3_{1}21$ & $P3_1$ & $C2$ & Y & N \\
+    $153$ & $P3_{2}12$ & $P3_2$ & $C2$ & Y & N \\
+    $154$ & $P3_{2}21$ & $P3_2$ & $C2$ & Y & N \\
+    $171$ & $P6_2$ & $P3_2$ & $P2$ & Y & Y \\
+    $171$ & $P6_2$ & $P6_1$ & $P2$ & Y & Y \\
+    $172$ & $P6_4$ & $P3_1$ & $P2$ & Y & Y \\
+    $172$ & $P6_4$ & $P6_5$ & $P2$ & Y & Y \\
+    $173$ & $P6_3$ & $P2_1$ & $P3$ & Y & Y \\
+    $173$ & $P6_3$ & $P6_1$ & $P3$ & Y & Y \\
+    $173$ & $P6_3$ & $P6_5$ & $P3$ & Y & Y \\
+    $178$ & $P6_{1}22$ & $P6_1$ & $C2$ & Y & N \\
+    $179$ & $P6_{5}22$ & $P6_5$ & $C2$ & Y & N \\
+    $180$ & $P6_{2}22$ & $P3_2$ & $C222$ & Y & N \\
+    $180$ & $P6_{2}22$ & $P6_1$ & $C222$ & Y & N \\
+    $181$ & $P6_{4}22$ & $P3_1$ & $C222$ & Y & N \\
+    $181$ & $P6_{4}22$ & $P6_5$ & $C222$ & Y & N \\
+    $182$ & $P6_{3}22$ & $P2_1$ & $P321,P312$ & Y & Y,Y \\
+    $182$ & $P6_{3}22$ & $P6_1$ & $P321,P312$ & Y & N,N \\
+    $182$ & $P6_{3}22$ & $P6_5$ & $P321,P312$ & Y & N,N \\
+    $198$ & $P2_{1}3$ & $P2_{1}2_{1}2_1$ & $R3$ & Y & N \\
+    $212$ & $P4_{3}32$ & $P2_{1}2_{1}2_1$ & $R32$ & Y & N \\
+    $213$ & $P4_{1}32$ & $P2_{1}2_{1}2_1$ & $R32$ & Y & N \\
+
+\end{longtable}
+\\ \\ 
+\newpage
+
+
+\section{\bf Examples of decomposition procedure}
+\subsection{$\bf 17$, $\bf P222_{1}$} 
+The first example is a decomposition of $P222_1$ with subgroups $P2_{1}$ and $P2$ where $\det(X)=\det(Y)=\det(Z)=1$. The second example contains the same subgroups but requires using an expanded lattice ($\det(Z)=2$). The third example also requires an expanded lattice and details what to do when $\Gamma_S$ is not a $P$ group.
+\subsubsection{{\color{blue} Decomposition 1}}
+In the first example we start with 
+\[
+\Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 0 & 0 & 1 & 0 \\ 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{pmatrix}.
+\]
+Let $Z = \alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,y+1/2,-z); (x,-y+1/2,-z); (-x,-y,z)\}.
+\]
+Putting $S$ group element $(x,-y+1/2,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 0 & -1 & 0 & 1/4 \\ 1 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\}.
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (x,-y+1/2,-z)\},
+\]
+{\color{blue} B and S are both normal, as in the table.}
+{\color{blue} $\Sigma = \mathbb{T}$.}
+
+\subsubsection{{\color{red} Decomposition 2}}
+Here we start with
+\[
+    \Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 0 & 0 & 2 & 0 \\ 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \end{pmatrix}.
+\]
+Using $Z=\alpha$ and $X=\mathbb{I}$,
+\[
+    {\center{
+        $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,y+1/2,-z); (x,-y+1/2,-z); (-x,-y,z); \break (x,y,z+1/2); (-x,y+1/2,-z-1/2); \break (x,-y+1/2,-z-1/2); (-x,-y,z+1/2)$\}.
+    }}   
+\]
+Entering the two $S$ group elements $(-x,-y,z)$ and $(x,y,z+1/2)$ into IDENTIFY GROUP gives
+\[
+    \Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -2 & 0 \\ 0 & 1 & 0 & 0 \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\}.
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z); (x,y,z+1/2); (-x,-y,z+1/2)\},
+\]
+{\color{red} B and S are both normal. This decomposition is not in the table because S is on a finer lattice.}
+{\color{red} $\Sigma \ne \mathbb{T}$.}
+
+
+\subsubsection{{\color{red} Decomposition 3}}
+To illustrate another possible decomposition for $P222_{1}$, we use the same approach except we expand the lattice of $\Gamma$ to fit $\Gamma_{S}$, and look for a complementary $B$ group.  First we take 
+\[
+\Gamma_S = C2, \ \ \  \beta = \begin{pmatrix} 2 & 0 & 0 & 0 \\ 0 & 2 & 0 & 0 \\ 0 & 0 & 1 & 1/4  \end{pmatrix}.
+\]
+Let $Z = \beta$ and $Y = \mathbb{I}$.  Then we have 
+\[
+    {\center{
+        $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-x,y,-z); (x,-y,-z-1/2); \break (x+1/2,y,z); (x,y+1/2,z); (-x-1/2,-y,z+1/2); \break (-x-1/2,y,-z); (x+1/2,-y,-z-1/2); (x+1/2,y+1/2,z); \break (-x,-y-1/2,z+1/2); (-x,y+1/2,-z); \break (x,-y-1/2,-z-1/2); (-x-1/2,-y-1/2,z+1/2); \break (-x-1/2,y+1/2,-z); (x+1/2,-y-1/2,-z-1/2)$\}.
+    }}   
+\]
+From this we can pick out $B$ group element $(-x,-y,z+1/2)$, and IDENTIFY GROUP gives us
+\[
+\Gamma_B = P2_1, \ \ \  X = \begin{pmatrix} 2 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z-1/2); (x+1/2,y,z); (-x-1/2,-y,z-1/2)\}.
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,y,-z); (x+1/2,y+1/2,z); (-x+1/2,y+1/2,-z)\},
+\]
+Although this seems like a valid decomposition, $C2$ is not a $P$ group, so the version of $P1$ used for the coset decomposition is not the finest lattice and is therefore coarser than $\mathbb{Z}^3$.
+
+To determine the centering matrix necessary to express $F_{\frac{C2}{P1}$ with the finest version of $P1$, we use SUBGROUPGRAPH with $G=C2$, $H=P1$, and $[G:H] = 2$ and we get the centering matrix
+\[
+    C = \begin{pmatrix} 1/2 & -1/2 & 0 & 0 \\ 1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Then we let $Y=C$ and 
+\[
+    Z = \beta C = \begin{pmatrix} 1 & -1 & 0 & 0 \\ 1 & 1 & 0 & 0 \\ 0 & 0 & 1 & 1/4  \end{pmatrix}.
+\]
+Then we have
+\[
+    {\center{
+        $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (y,x,-z); (-y,-x,-z+1/2); \break (x+1/2,y+1/2,z); (-x+1/2,-y+1/2,z+1/2); \break (y+1/2,x+1/2,-z); (-y+1/2,-x+1/2,-z+1/2)$\}.
+    }}   
+\]
+Using $B$ group elements $(-x+1/2,-y+1/2,z+1/2)$ and $(-x,-y,z+1/2)$ in IDENTIFY GROUP gives
+\[
+    \Gamma_B = P2_1, \ \ \  X = \begin{pmatrix} 1 & 1 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ -1 & 1 & 0 & 0 \end{pmatrix}.
+\]
+Then from COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (x+1/2,y+1/2,z); (-x+1/2,-y+1/2,z+1/2)\}.
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (y,x,-z)\},
+\]
+
+{\color{red} B and S are both normal. This decomposition is not in the table since B is on a finer lattice.}
+{\color{red} $\Sigma \ne \mathbb{T}$.}
+
+\hfill \break
+\subsection{$\bf 18$, $\bf P2_{1}2_{1}2$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+In the first decomposition for $P2_{1}2_{1}2$, we start with
+\[
+\Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 1/4  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1/2,-y,z); (-x,y+1/2,-z); (x+1/2,-y+1/2,-z)\}.
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & -1/4 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x-1/2,-y,z)\},
+\]
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\}.
+\]
+
+{\color{blue} B and S are both normal, as in the table.}
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P2_{1}2_{1}2_{1}, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 1/4 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 1/2 \end{pmatrix}.
+\]
+Using $Z=\alpha$ and $X=\mathbb{I}$,
+\[
+    {\center{
+        $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1/2,-y,z); (-x,y+1/2,-z-1/2); (x+1/2,-y+1/2,-z-1/2); \break (x,y,z+1/2); (-x-1/2,-y,z+1/2); \break (-x,y+1/2,-z-1); (x+1/2,-y+1/2,-z-1)$\}.
+    }}   
+\]
+Entering two $S$ group elements $(-x-1/2,-y,z+1/2)$ and $(-x-1/2,-y,z)$ into IDENTIFY GROUP gives
+\[
+    \Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & -1/4 \\ 0 & 0 & -2 & 0 \\ 0 & 1 & 0 & 0 \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\}.
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x+1/2,-y,z); (x,y,z+1/2); (-x+1/2,-y,z+1/2)\},
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsubsection{{\color{red} Decomposition 3}}
+Here we expand the lattice of $\Gamma$ to fit $\Gamma_S$ and look for a complementary B group. We start with
+\[
+\Gamma_S = C2, \ \ \  \beta = \begin{pmatrix} 0 & 0 & 1 & 0 \\ 2 & 0 & -1 & 1/2 \\ 0 & 2 & 0 & 0  \end{pmatrix}.
+\]
+Since $C2$ is not a $P$ group, the version of $P1$ used for the coset decomposition is coarser than $\mathbb{Z}^3$.  To express $F_{\frac{C2}{P1}}$ with the finest version of $P1$, we use SUBGROUPGRAPH with $G=C2$, $H=P1$, and $[G:H]=2$ and we get the centering matrix
+\[
+    C = \begin{pmatrix} 1/2 & 1/2 & 0 & 0 \\ -1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Then we let $Y=C$ and 
+\[
+    Z = \beta C = \begin{pmatrix} 0 & 0 & 1 & 0 \\ 1 & 1 & -1 & 1/2 \\ -1 & 1 & 0 & 0  \end{pmatrix}.
+\]
+Then we have
+\[
+    {\center{
+        $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y-1/2,-x-1/2,-z); (y-z+1/2,x-z+1/2,-z+1/2); \break (-x+z,-y+z,z+1/2); (x+1/2,y+1/2,z); (-y-1,-x-1,-z); \break (y-z+1,x-z+1,-z+1/2); (-x+z-1/2,-y+z-1/2,z+1/2)$\}.
+    }}   
+\]
+Using $B$ group elements $(-x+z,-y+z,z+1/2)$ and $(-x+z+1/2,-y+z+1/2,z+1/2)$ in IDENTIFY GROUP gives
+\[
+    \Gamma_B = P2_1, \ \ \  X = \begin{pmatrix} 1 & -1 & 0 & -1/2 \\ 0 & 0 & 1 & 1/4 \\ -1 & -1 & 1 & 3/4 \end{pmatrix}.
+\]
+Then from COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x+z+3/2,-y+z+1/2,z+1/2); (x+1/2,y+1/2,z); (-x+z+1,-y+z,z+1/2)\}.
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y,-x,-z)\},
+\]
+{\color{red} B and S are both normal. This decomposition is not in the table because B is on a finer lattice.}
+
+\hfill \break
+
+\subsection{$\bf 20$, $\bf C222_1$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+In the first decomposition for $C222_1$, we start with
+\[
+\Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 1/2 & 0 & 1/2 & 0 \\ 1/2 & 0 & -1/2 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,y+1/2,-z); (-z,-y+1/2,-x); (z,-y,x)\}.
+\]
+Putting $S$ group element $(z,-y,x)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 0 & -1/2 & 0 \\ -1/2 & 0 & -1/2 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (z,-y,x)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P2_{1}2_{1}2_{1}, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 1/4 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0 \end{pmatrix}.
+\]
+Using $Z=\alpha$ and $X=\mathbb{I}$,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1/2,-y,z+1/2); (-x-1/2,y,-z+1/2); (x,-y,-z); \break (x+1/2,y+1/2,z); (-x,-y+1/2,z+1/2); \break (-x,y+1/2,-z+1/2); (x+1/2,-y+1/2,-z)$\}.
+    }}   
+\]
+Entering $S$ group element $(x,-y,-z)$ into IDENTIFY GROUP gives
+\[
+    \Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 0 & 1 & 0 & 0 \\ -1 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x+1/2,-y,z+1/2); (-x,y+1/2,-z+1/2); (x+1/2,-y+1/2,-z)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (x,-y,-z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+% \subsubsection{Delete}
+% Following the algorithm gives $\Gamma_S = C2$, however my program had previously found that it works with $P2$ as well.  If we use $P2$ with the same $Y$ matrix, you end up with the same fundamental domain for the $S$ group ($\{x,y,z); (z,-y,x)\}$).  However, it doesn't make sense to apply a centering transformation to a $P$ group. {\color{red} (Bilbao should give an error?)}
+% If instead we use two $S$ group elements $(x,-y,-z)$ and $(x+1/2,-y+1/2,-z)$, IDENTIFY GROUP will give $\Gamma_S = C2$ with the same $Y$ matrix. Then from COSETS,
+% \[
+%     F_{\frac{\Gamma_{B}^{Y}}{P1}} = \{(x,y,z); (-x+1/2,-y,z+1/2); (-x,y+1/2,-z+1/2); (x+1/2,-y+1/2,-z)\},
+% \]
+% \[
+%     F_{\frac{\Gamma_{S}^{X}}{P1}} = \{(x,y,z); (x,-y,-z), (x-1/2,y+1/2,z); (x-1/2,-y+1/2,-z)\}.
+% \]
+% However this decomposition does not satisfy Lagrange's theorem even though the product reproduces $F_{\frac{\Gamma^Z}{P1}}$.  There is no way to apply a centering matrix to $Y$ to make the $C2$ point group look like $P2$ and contain $(x,-y,-z)$ with index 2 (with respect to the finest lattice).
+% {\color{red} Note that if we use
+%     \[
+%     \Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 0 & 1/2 & 0 & 0 \\ -1/2 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 \end{pmatrix},
+%     \]
+% we will get the same S group as when $\Gamma_S = P2$ but Bilbao should give an error for this matrix.}
+
+% In conclusion, there are only 2 valid decompositions, $P2_1$ with $C2$, and $P2_{1}2_{1}2_{1}$ with $P2$ which is in accordance with the table.
+
+% {\color{red} We may need a new approach for decomposing a non-primitive group because $C222_1$ is on a coarser lattice by default and contains a pure translation.  If we apply a centering transformation at the beginning, we would need a centering transformation to make $P2_{1}2_{1}2_{1}$ fit because $[C222_1:P1] = [P2_{1}2_{1}2_{1}:P1] = 4$ with respect to the finest version of $P1$.}
+
+
+\hfill \break
+
+\subsection{$\bf 24$, $\bf I2_{1}2_{1}2_{1}$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+In the first decomposition for $I2_{1}2_{1}2_{1}$, we start with
+\[
+\Gamma_B = P2_{1}2_{1}2_{1}, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x+1/2,-y,z+1/2); (-x,y+1/2,-z+1/2); \break (x+1/2,-y+1/2,-z); (x+1/2,y+1/2,z+1/2); \break (-x,-y+1/2,z); (-x+1/2,y,-z); (x,-y,-z+1/2)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x,-y+1/2,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & -1/4  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x+1/2,-y,z+1/2); (-x,y+1/2,-z+1/2); (x+1/2,-y+1/2,-z)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y+1/2,z)\}.
+\]
+% {\color{red} }
+%     This is the decomposition in the paper, but my program says both $B$ and $S$ are normal in $F_{\frac{\Gamma^Z}{P1}}$.  If we put two $S$ group elements into IDENTIFY and look for a 4 element $S$ group (forcing Lagrange's theorem to not hold) we end up with the same situation as last time where there's a nontrivial intersection between $B$ and $S$.
+% }
+
+{\color{red} B and S are both normal. This decomposition is in the table, but in the table B is listed as normal and S is not.}
+
+
+\subsubsection{{\color{red} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 1/4 \\ 0 & 0 & 1 & 1/4 \end{pmatrix}.
+\]
+Using $Z=\alpha$ and $X=\mathbb{I}$,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x+1/2,-y-1/2,z+1/2); (-x,y+1/2,-z); \break (x+1/2,-y,-z-1/2); (x+1/2,y+1/2,z+1/2); \break (-x,-y,z); (-x+1/2,y,-z-1/2); (x,-y-1/2,-z)$\}.
+    }}   
+\]
+Entering $S$ group elements $(-x,-y,z)$ and $(x+1/2,y+1/2,z+1/2)$ into IDENTIFY GROUP gives
+\[
+    \Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 0 & 1 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ -1 & 1 & 0 & 0 \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z); (x+1/2,y+1/2,z-1/2); (-x+1/2,-y+1/2,z-1/2)\}.
+\]
+{\color{red} B and S are both normal. This is a new decomposition, not listed in the table.}
+
+\hfill \break
+
+\subsection{$\bf 77$, $\bf P4_2$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+In the first decomposition for $P4_2$, we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y,x,z+1/4); (y,-x,z+1/4); (x,y,z+1/2); \break (-x,-y,z+1/2); (-y,x,z+3/4); (y,-x,z+3/4)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z)\}.
+\]
+{\color{red} B and S are both normal. In the table B is listed as normal and S is not.}
+
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P4_3, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y,x,z+1/4); (y,-x,z+1/4); (x,y,z+1/2); \break (-x,-y,z+1/2); (-y,x,z+3/4); (y,-x,z+3/4)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+3/4); (y,-x,z+1/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z)\}.
+\]
+{\color{red} B and S are both normal. In the table B is listed as normal and S is not.}
+
+\hfill \break
+
+\subsection{$\bf 80$, $\bf I4_1$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+In the first decomposition for $P4_2$, we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1,-y,z+1/2); (-y-1,x+1,z+1/4); \break (y,-x-1,z+3/4); (x+1/2,y+1/2,z+1/2); \break (-x-3/2,-y-1/2,z); (-y-1/2,x+1/2,z+3/4);  \break (y-1/2,-x-1/2,z+1/4)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x-3/2,-y-1/2,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & -1/4 \\ 0 & 0 & 1 & 0 \\ 0 & -1 & 0 & -1/4  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x+1/2,-y-1/2,z)\}.
+\]
+{\color{red} B and S are both normal. In the table B is listed as normal and S is not.}
+
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P4_3, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 3/4 \\ 0 & 1 & 0 & 3/4 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1,-y-1,z+1/2); (-y-3/2,x+1/2,z+1/4); \break (y+1/2,-x-3/2,z+3/4); (x+1/2,y+1/2,z+1/2); \break (-x-3/2,-y-3/2,z); (-y-1,x,z+3/4);  \break (-y-1,x,z+1/4)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x-3/2,-y-1/2,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & -1/4 \\ 0 & 0 & 1 & 0 \\ 0 & -1 & 0 & -1/4  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+3/4); (y,-x,z+1/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x+1/2,-y-1/2,z)\}.
+\]
+{\color{red} B and S are both normal. In the table B is listed as normal and S is not.}
+
+\hfill \break
+
+
+% \subsection{$\bf 90$, $\bf P42_{1}2$} 
+
+% \subsubsection{Decomposition 1}
+% In the first decomposition for $P42_{1}2$, we start with
+% \[
+% \Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 2 & 0 & 1/2  \end{pmatrix}.
+% \]
+% Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+% \[
+%     {\center{
+%             $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,y,-z); (z+1/2,y,-x-1/2); \break (-z+1/2,y,x-1/2); (-x+1/2,-y-1/2,z-1/2); \break (x+1/2,-y-1/2,-z-1/2); (-z,-y-1/2,-x);  (z,-y-1/2,x); \break (x,y+1/2,z); (-x,y+1/2,-z); (z+1/2,y+1/2,-x-1/2); \break (-z+1/2,y+1/2,x-1/2); (-x+1/2,-y-1,z-1/2); \break (x+1/2,-y-1,-z-1/2); (-z,-y-1,-x);  (z,-y-1,x)$\}.
+%     }}   
+% \]
+% Putting $S$ group elements $(-x,y,-z)$, $(-z,-y-1/2,-x)$, and $(-z,-y-1,-x)$ into IDENTIFY GROUP gives us 
+% \[
+% \Gamma_S = C222, \ \ \  Y = \begin{pmatrix} 1/2 & 0 & 1/2 & 0 \\ -1/2 & 0 & 1/2 & 0 \\ 0 & -2 & 0 & 0  \end{pmatrix}.
+% \]
+% From COSETS,
+% \[
+%     F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\},
+% \]
+% \[                                             
+%     {\center{
+%     $F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,y,-z); (-z,-y,-x); (z,-y,x); \break (x,y+1/2,z); (-x,y+1/2,-z); (-z,-y-1/2,-x); (z,-y-1/2,x)\}.$
+% }}
+% \]
+
+
+\subsection{$\bf 91$, $\bf P4_{1}22$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 1 & 0 & 0 \\ -1 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y+1/2,x+1/2,z); (y+1/2,-x+1/2,z); \break (-x+1/2,y+1/2,-z); (x+1/2,-y+1/2,-z); (y,x,-z); \break (-y,-x,-z); (x,y,z); (-x,-y,z); (-y+1/2,x+1/2,z); \break (y+1/2,-x+1/2,z); (-x+1/2,y+1/2,-z); \break (x+1/2,-y+1/2,-z); (y,x,-z); (-y,-x,-z)$\}.
+    }}
+\]
+Putting $S$ group elements $(-y,-x,-z)$ and $(-y-1/2,-x-1/2,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1/2 & -1/2 & 0 & 0 \\ 1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y,-x,-z); (x+1/2,y+1/2,z); (-y-1/2,-x-1/2,-z)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+\hfill \break
+
+\subsection{$\bf 92$, $\bf P4_{1}2_{1}2$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P2_{1}2_{1}2_{1}, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 1/4 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 3/8  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1/2,-y,z+1/2); (-y+1/4,x+3/4,z+1/4); (y+1/4,-x+1/4,z+3/4); \break (-x,y+1/2,-z-1/2); (x+1/2,-y+1/2,-z); (y-1/4,x+1/4,-z-3/4); \break (-y-1/4,-x-1/4,-z-1/4)$\}.
+    }}
+\]
+Putting $S$ group element $(-y-1/4,-x-1/4,-z-1/4)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & 1/8 \\ -1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & 1/8  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x+1/2,-y,z+1/2); (-x,y+1/2,-z+1/2); (x+1/2,-y+1/2,-z)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y-1/4,-x-1/4,-z-1/4)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 1/2 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x-1/2,-y,z+1/2); (-y+1/4,x+3/4,z+1/4); \break (y+1/4,-x+1/4,z+3/4); (-x,y+1/2,-z-1/2); \break (x+1/2,-y+1/2,-z); (y-1/4,x+1/4,-z-3/4); \break (-y-1/4,-x-1/4,-z-1/4)$\}.
+    }}
+\]
+Putting $S$ group element $(-y-1/2,-x-1/2,-z+1/2)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & -1/4 \\ -1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & -1/4  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y+1/2,-x+1/2,-z+1/2)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+\hfill \break
+
+
+\subsection{$\bf 93$, $\bf P4_{2}22$} 
+{\color{red} TYPO in table (subscript in table is 1)}
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y,x,z+1/4); (y,-x,z+1/4); (-x,y,-z); \break (x,-y,-z); (y,x,-z+1/4); (-y,-x,-z+1/4); \break (x,y,z+1/2); (-x,-y,z+1/2); (-y,x,z+3/4); \break (y,-x,z+3/4); (-x,y,-z-1/2); \break (x,-y,-z-1/2); (y,x,-z-1/4); \break (-y,-x,-z-1/4)$\}.
+    }}
+\]
+Putting $S$ group elements $(-x,y,-z)$ and $(x,-y,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P222, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z); (-x,y,-z); (x,-y,-z)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P4_3, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y,x,z+1/4); (y,-x,z+1/4); (-x,y,-z); \break (x,-y,-z); (y,x,-z+1/4); (-y,-x,-z+1/4); \break (x,y,z+1/2); (-x,-y,z+1/2); (-y,x,z+3/4); \break (y,-x,z+3/4); (-x,y,-z-1/2); \break (x,-y,-z-1/2); (y,x,-z-1/4); \break (-y,-x,-z-1/4)$\}.
+    }}
+\]
+Putting $S$ group elements $(-x,y,-z)$ and $(x,-y,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P222, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+3/4); (y,-x,z+1/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z); (-x,y,-z); (x,-y,-z)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+
+\subsubsection{{\color{red} Decomposition 3}}
+Here we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y,x,z+1/4); (y,-x,z+1/4); (-x,y,-z); \break (x,-y,-z); (y,x,-z+1/4); (-y,-x,-z+1/4); \break (x,y,z+1/2); (-x,-y,z+1/2); (-y,x,z+3/4); \break (y,-x,z+3/4); (-x,y,-z-1/2); \break (x,-y,-z-1/2); (y,x,-z-1/4); \break (-y,-x,-z-1/4)$\}.
+    }}
+\]
+Putting $S$ group elements $(-x,-y,z)$ and $(y,x,-z-1/4)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C222, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & 0 \\ -1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z); (-y,-x,-z+3/4); (y,x,-z+3/4)\}.
+\]
+{\color{red} B is normal and S is not normal. This is a new decomposition, not in the table.}
+
+\hfill \break
+
+
+\subsection{$\bf 94$, $\bf P4_{3}22$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P4_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x,-y,z); (-y,x,z+1/4); (y,-x,z+1/4); (-x,y,-z); \break (x,-y,-z); (y,x,-z+1/4); (-y,-x,-z+1/4); \break (x,y,z+1/2); (-x,-y,z+1/2); (-y,x,z+3/4); \break (y,-x,z+3/4); (-x,y,-z-1/2); \break (x,-y,-z-1/2); (y,x,-z-1/4); \break (-y,-x,-z-1/4)$\}.
+    }}
+\]
+Putting $S$ group elements $(-x,y,-z)$ and $(x,-y,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P222, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,-y,z+1/2); (-y,x,z+1/4); (y,-x,z+3/4)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z); (-x,y,-z); (x,-y,-z)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+\hfill \break
+{\color{red} NOT FINISHED}
+
+
+\subsection{$\bf 151$, $\bf P3_{1}12$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P3_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-y,-x,-z+2/3); (-x+y,y,-z+1/3); (x,x-y,-z)$\}.
+    }}
+\]
+Putting $S$ group element $(-y,-x,-z+2/3)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & 0 \\ -1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & 1/6  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y,-x,-z+2/3)\}.
+\]
+{\color{red} B is normal and S is not normal. In the table, B and S are both listed as normal.}
+
+
+\subsection{$\bf 152$, $\bf P3_{1}21$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P3_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (y,x,-z); (x-y,-y,-z+2/3); (-x,-x+y,-z+1/3)$\}.
+    }}
+\]
+Putting $S$ group element $(y,x,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & 0 \\ 1/2 & -1/2 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (y,x,-z)\}.
+\]
+{\color{red} B is normal and S is not normal. In the table, B and S are both listed as normal.}
+
+
+\subsection{$\bf 153$, $\bf P3_{2}12$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P3_2, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3); \break (-y,-x,-z+1/3); (-x+y,y,-z+2/3); (x,x-y,-z)$\}.
+    }}
+\]
+Putting $S$ group element $(-y,-x,-z+2/3)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & 0 \\ -1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & -1/6  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y,-x,-z+1/3)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table}
+
+
+\subsection{$\bf 154$, $\bf P3_{2}21$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P3_2, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3); \break (y,x,-z); (x-y,-y,-z+1/3); (-x,-x+y,-z+2/3)$\}.
+    }}
+\]
+Putting $S$ group element $(y,x,-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & 1/2 & 0 & 0 \\ 1/2 & -1/2 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (y,x,-z)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table}
+
+
+
+\subsection{$\bf 171$, $\bf P6_2$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P3_2, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3); \break (-x,-y,z); (y,-x+y,z+2/3); (x-y,x,z+1/3)$\}.
+    }}
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P6_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+1/6); \break (-x,-y,z); (y,-x+y,z+1/3); (x-y,x,z+1/6); \break (x,y,z+1/2);  (-y,x-y,z+5/6);  (-x+y,-x,z+2/3);  \break (-x,-y,z+1/2);  (y,-x+y,z+5/6);  (x-y,x,z+2/3)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-x,-y,z+1/2); (y,-x+y,z+5/6); (x-y,x,z+1/6)\}$,
+    }}
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+
+
+\subsection{$\bf 172$, $\bf P6_4$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P3_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-x,-y,z); (y,-x+y,z+1/3); (x-y,x,z+2/3)$\}.
+    }}
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P6_5, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 2 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/6); (-x+y,-x,z+1/3); \break (-x,-y,z); (y,-x+y,z+1/6); (x-y,x,z+1/3); \break (x,y,z+1/2);  (-y,x-y,z+2/3);  (-x+y,-x,z+5/6);  \break (-x,-y,z+1/2);  (y,-x+y,z+2/3);  (x-y,x,z+5/6)$\}.
+    }}   
+\]
+Putting $S$ group element $(-x,-y,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P2, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & -1 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3); \break (-x,-y,z+1/2); (y,-x+y,z+1/6); (x-y,x,z+5/6)$\}.
+    }}
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-x,-y,z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsection{$\bf 173$, $\bf P6_3$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P2_1, \ \ \  \alpha = \begin{pmatrix} 0 & 0 & 1 & 0 \\ 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-x+z,y,-x); (-z,y,x-z); \break (-x,y+1/2,-z); (x-z,y+1/2,x); (z,y+1/2,-x+z)$\}.
+    }}
+\]
+Putting $S$ group element $(-z,y,x-z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P3, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 0 & 1 & 0 \\ 0 & -1 & 0 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-x,y+1/2,-z)\},
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-z,y,x-z); (-x+z,y,-x)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsubsection{{\color{blue} Decomposition 2}}
+Here we start with
+\[
+\Gamma_B = P6_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 3 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z); (-x+y,-x,z); \break (-x,-y,z+1/6); (y,-x+y,z+1/6); (x-y,x,z+1/6); \break (x,y,z+1/3);  (x,y,z+2/3);  (-y,x-y,z+1/3);  \break (-x+y,-x,z+1/3);  (-x,-y,z+1/2);  (y,-x+y,z+1/2); \break (x-y,x,z+1/2); (-y,x-y,z+2/3); (-x+y,-x,z+2/3); \break (-x,-y,z+5/6); (y,-x+y,z+5/6); (x-y,x,z+5/6)$\}.
+    }}   
+\]
+Putting $S$ group elements $(-y,x-y,z)$ and $(-x+y,-x,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P3, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-x,-y,z+1/2); (y,-x+y,z+5/6); (x-y,x,z+1/6)$\}.
+    }}
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y,x-y,z); (-x+y,-x,z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsubsection{{\color{blue} Decomposition 3}}
+Here we start with
+\[
+\Gamma_B = P6_5, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 3 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z); (-x+y,-x,z); \break (-x,-y,z+1/6); (y,-x+y,z+1/6); (x-y,x,z+1/6); \break (x,y,z+1/3);  (x,y,z+2/3);  (-y,x-y,z+1/3);  \break (-x+y,-x,z+1/3);  (-x,-y,z+1/2);  (y,-x+y,z+1/2); \break (x-y,x,z+1/2); (-y,x-y,z+2/3); (-x+y,-x,z+2/3); \break (-x,-y,z+5/6); (y,-x+y,z+5/6); (x-y,x,z+5/6)$\}.
+    }}   
+\]
+Putting $S$ group elements $(-y,x-y,z)$ and $(-x+y,-x,z)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = P3, \ \ \  Y = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3); \break (-x,-y,z+1/2); (y,-x+y,z+1/6); (x-y,x,z+5/6)$\}.
+    }}
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (-y,x-y,z); (-x+y,-x,z)\}.
+\]
+{\color{blue} B and S are both normal, as in the table.}
+
+
+\subsection{$\bf 178$, $\bf P6_{1}22$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P6_1, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-x,-y,z+1/2); (y,-x+y,z+5/6); (x-y,x,z+1/6); \break (y,x,-z+1/3); (x-y,-y,-z); (-x,-x+y,-z+2/3); \break (-y,-x,-z+5/6); (-x+y,y,-z+1/2); (x,x-y,-z+1/6)$\}.
+    }}
+\]
+Putting $S$ group element $(y,x,-z+1/3)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & -1/2 & 0 & 0 \\ 1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & -1/6  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-x,-y,z+1/2); (y,-x+y,z+5/6); (x-y,x,z+1/6)\}$,
+    }}
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (y,x,-z+1/3)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+
+\subsection{$\bf 179$, $\bf P6_{5}22$} 
+
+\subsubsection{{\color{blue} Decomposition 1}}
+Here we start with
+\[
+\Gamma_B = P6_5, \ \ \  \alpha = \begin{pmatrix} 1 & 0 & 0 & 0 \\ 0 & 1 & 0 & 0 \\ 0 & 0 & 1 & 0  \end{pmatrix}.
+\]
+Let $Z=\alpha$ and $X=\mathbb{I}$.  From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma^Z}{P1}} = \{(x,y,z); (-y,x-y,z+1/3); (-x+y,-x,z+2/3); \break (-x,-y,z+1/2); (y,-x+y,z+5/6); (x-y,x,z+1/6); \break (y,x,-z+1/3); (x-y,-y,-z); (-x,-x+y,-z+2/3); \break (-y,-x,-z+5/6); (-x+y,y,-z+1/2); (x,x-y,-z+1/6)$\}.
+    }}
+\]
+Putting $S$ group element $(y,x,-z+1/3)$ into IDENTIFY GROUP gives us 
+\[
+\Gamma_S = C2, \ \ \  Y = \begin{pmatrix} 1/2 & -1/2 & 0 & 0 \\ 1/2 & 1/2 & 0 & 0 \\ 0 & 0 & 1 & -1/6  \end{pmatrix}.
+\]
+From COSETS,
+\[
+    {\center{
+            $F_{\frac{\Gamma_{B}^{X}}{P1}} = \{(x,y,z); (-y,x-y,z+2/3); (-x+y,-x,z+1/3); \break (-x,-y,z+1/2); (y,-x+y,z+1/6); (x-y,x,z+5/6)\}$,
+    }}
+\]
+\[
+    F_{\frac{\Gamma_{S}^{Y}}{P1}} = \{(x,y,z); (y,x,-z+1/3)\}.
+\]
+{\color{blue} B is normal and S is not normal, as in the table.}
+
+
+
+
+
+
+
+\end{document} 
