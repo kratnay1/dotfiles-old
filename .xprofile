@@ -1,0 +1,8 @@
+synclient ClickFinger3=0
+synclient TapButton3=0
+synclient PalmDetect=1
+synclient PalmMinWidth=4
+synclient PalmMinZ=50
+synclient VertScrollDelta=-28
+synclient HorizScrollDelta=-28
+touchegg &
